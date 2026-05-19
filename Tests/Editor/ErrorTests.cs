@@ -124,5 +124,62 @@ namespace Tutan.Functional.Tests
             Assert.AreEqual(error1, error2);
             Assert.IsTrue(error1 == error2);
         }
+
+        [Test]
+        public void Constructor_WithCode_SetsCode()
+        {
+            var error = new Error("not found", 404);
+
+            Assert.AreEqual("not found", error.Message);
+            Assert.AreEqual(404, error.Code);
+        }
+
+        [Test]
+        public void FactoryMethod_ErrorStringCode_CreatesErrorWithCode()
+        {
+            Error error = Error("forbidden", 403);
+
+            Assert.AreEqual("forbidden", error.Message);
+            Assert.AreEqual(403, error.Code);
+        }
+
+        [Test]
+        public void Constructor_WithCodeAndInner_SetsCodeAndInner()
+        {
+            var inner = new Error("root cause");
+            var outer = new Error("wrapper", 500, inner);
+
+            Assert.AreEqual(500, outer.Code);
+            Assert.AreEqual(1, outer.InnerErrors.Length);
+            Assert.AreEqual("root cause", outer.InnerErrors[0].Message);
+        }
+
+        [Test]
+        public void Code_DefaultsToZero()
+        {
+            var error = new Error("simple");
+
+            Assert.AreEqual(0, error.Code);
+        }
+
+        [Test]
+        public void Equality_SameMessageDifferentCode_AreNotEqual()
+        {
+            var error1 = new Error("same message", 1);
+            var error2 = new Error("same message", 2);
+
+            Assert.AreNotEqual(error1, error2);
+            Assert.IsTrue(error1 != error2);
+        }
+
+        [Test]
+        public void Equality_SameMessageAndCode_AreEqual()
+        {
+            var error1 = new Error("same", 42);
+            var error2 = new Error("same", 42);
+
+            Assert.AreEqual(error1, error2);
+            Assert.IsTrue(error1 == error2);
+        }
     }
 }

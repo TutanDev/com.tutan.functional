@@ -7,7 +7,9 @@ namespace Tutan.Functional
     public static partial class F
     {
         public static Error Error(string message) => new Error(message);
+        public static Error Error(string message, int code) => new Error(message, code);
         public static Error Error(string message, Error inner) => new Error(message, inner);
+        public static Error Error(string message, int code, Error inner) => new Error(message, code, inner);
         public static Error Error(IEnumerable<Error> errors) => new Error(errors);
     }
 
@@ -22,9 +24,11 @@ namespace Tutan.Functional
     public readonly struct Error : IEquatable<Error>
     {
         private readonly string _message;
+        private readonly int _code;
         private readonly Error[] _inner;
 
         public string Message => _message;
+        public int Code => _code;
 
         /// <remarks>Returns a <see cref="ReadOnlySpan{T}"/>; cannot cross async boundaries.</remarks>
         public ReadOnlySpan<Error> InnerErrors => _inner ?? Array.Empty<Error>();
@@ -34,12 +38,28 @@ namespace Tutan.Functional
         public Error(string message)
         {
             _message = message;
+            _code = 0;
+            _inner = null;
+        }
+
+        public Error(string message, int code)
+        {
+            _message = message;
+            _code = code;
             _inner = null;
         }
 
         public Error(string message, Error inner)
         {
             _message = message;
+            _code = 0;
+            _inner = new[] { inner };
+        }
+
+        public Error(string message, int code, Error inner)
+        {
+            _message = message;
+            _code = code;
             _inner = new[] { inner };
         }
 
@@ -47,6 +67,7 @@ namespace Tutan.Functional
         {
             var arr = errors.ToArray();
             _message = string.Join("; ", arr.Select(e => e.Message));
+            _code = 0;
             _inner = arr;
         }
 
@@ -58,13 +79,14 @@ namespace Tutan.Functional
         public override string ToString() => _message ?? string.Empty;
 
         public bool Equals(Error other)
-            => _message == other._message && ErrorArraysEqual(_inner, other._inner);
+            => _message == other._message && _code == other._code && ErrorArraysEqual(_inner, other._inner);
 
         public override bool Equals(object obj) => obj is Error other && Equals(other);
 
         public override int GetHashCode()
         {
             var h = _message?.GetHashCode() ?? 0;
+            h = h * 31 + _code;
             if (_inner != null)
                 h = h * 31 + _inner.Length;
             return h;

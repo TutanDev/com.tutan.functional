@@ -1,5 +1,3 @@
-global using Unit = System.ValueTuple;
-
 using System;
 using System.Linq;
 using NUnit.Framework;
@@ -7,6 +5,8 @@ using static Tutan.Functional.F;
 
 namespace Tutan.Functional.Tests
 {
+    using Unit = System.ValueTuple;
+
     [TestFixture]
     public class ModuleTests
     {

@@ -6,6 +6,8 @@ using static Tutan.Functional.F;
 
 namespace Tutan.Functional.Tests
 {
+    using Unit = System.ValueTuple;
+
     [TestFixture]
     public class EnumerableExtTests
     {
