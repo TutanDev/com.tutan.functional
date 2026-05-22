@@ -1,7 +1,7 @@
 {
   "name": "com.tutan.functional",
   "displayName": "Functional",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "unity": "6000.1",
   "unityRelease": "8f1",
   "description": "A lightweight functional programming library for Unity providing Optional<T>, Result<T>, and composable extension methods.",

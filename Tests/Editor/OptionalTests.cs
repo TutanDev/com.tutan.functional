@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using static Tutan.Functional.F;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Tutan.Functional.Tests

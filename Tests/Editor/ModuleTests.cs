@@ -7,6 +7,8 @@ using static Tutan.Functional.F;
 
 namespace Tutan.Functional.Tests
 {
+
+
     [TestFixture]
     public class ModuleTests
     {

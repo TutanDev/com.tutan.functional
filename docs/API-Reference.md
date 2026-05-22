@@ -173,6 +173,38 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 
 ---
 
+## `SerializableOptional<T>` (`[Serializable] struct`)
+
+Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]` field; convert to/from `Optional<T>` at the API boundary.
+
+### Construction
+
+| Signature | Description |
+|---|---|
+| `SerializableOptional(T value)` | Wraps a value (sets `_hasValue = true`) |
+| `static SerializableOptional<T> From(Optional<T> opt)` | Converts from `Optional<T>`; `None` → `default` |
+
+### Properties
+
+| Signature | Description |
+|---|---|
+| `bool HasValue` | `true` when a value is present |
+| `T Value` | The wrapped value (undefined when `HasValue` is `false`) |
+
+### Conversion
+
+| Signature | Description |
+|---|---|
+| `Optional<T> ToOptional()` | Converts to `Optional<T>` |
+| `(implicit) operator Optional<T>(SerializableOptional<T>)` | Implicit cast to `Optional<T>` |
+| `(implicit) operator SerializableOptional<T>(Optional<T>)` | Implicit cast from `Optional<T>` |
+
+### Editor — `SerializableOptionalDrawer`
+
+`CustomPropertyDrawer` for `SerializableOptional<>` (applied to all closed generics via `useForChildren: true`). UI Toolkit-based: renders a `Toggle` bound to `_hasValue` next to a `PropertyField` for `_value`. The value field is enabled only while the toggle is on.
+
+---
+
 ## `Result<T>` (`readonly record struct`)
 
 ### Construction

@@ -111,6 +111,51 @@ public static class SaveReader
 // int levelToLoad = SaveReader.TryReadLevel(playerPrefsValue).Or(1);
 ```
 
+## 5) Inspector-serializable optionals
+
+`Optional<T>` is a `readonly record struct` and is intentionally not Unity-serializable — exposing it on a `MonoBehaviour` would defeat the explicit `Some`/`None` distinction. For fields you want to author in the Inspector, use `SerializableOptional<T>`:
+
+```csharp
+using UnityEngine;
+using Tutan.Functional;
+
+public class EnemySpawner : MonoBehaviour
+{
+    [SerializeField] private SerializableOptional<Transform> overrideSpawn;
+    [SerializeField] private SerializableOptional<int> startingWaveOverride;
+
+    private void Start()
+    {
+        Vector3 spawn = overrideSpawn
+            .ToOptional()
+            .Then(t => t.position)
+            .Or(transform.position);
+
+        int wave = startingWaveOverride.ToOptional().Or(1);
+    }
+}
+```
+
+`SerializableOptional<T>` is a `[Serializable]` struct with a `_hasValue` toggle and an inner `_value`. It converts both ways with `Optional<T>`:
+
+- `someOpt.ToOptional()` — explicit conversion to `Optional<T>`.
+- `SerializableOptional<T>.From(opt)` — explicit conversion from `Optional<T>`.
+- Implicit casts in both directions are also available, so a field typed as `SerializableOptional<T>` can be passed anywhere an `Optional<T>` is expected.
+
+### Custom Inspector drawer
+
+`SerializableOptionalDrawer` (UI Toolkit `PropertyDrawer`, applied to `SerializableOptional<>` and all closed generics via `useForChildren: true`) renders the field as a row containing:
+
+- a **toggle** bound to `_hasValue`
+- the inner `_value` field, **enabled only when the toggle is on**
+
+This gives Inspector authors a clear "use this value / leave it unset" UX without exposing the wrapped value as a magic default.
+
+### Practical guidance
+
+- Use `SerializableOptional<T>` **only** at the serialization boundary (`[SerializeField]`, `ScriptableObject` data). Convert to `Optional<T>` as early as possible and keep the rest of the pipeline in terms of `Optional<T>`.
+- Don't expose `SerializableOptional<T>` from public APIs — it's a UI/serialization concern, not a domain concern.
+
 ## Practical guidance
 
 - Use `Optional<T>` for values that are truly optional (component may be absent, save field may be unset, query may return nothing).
