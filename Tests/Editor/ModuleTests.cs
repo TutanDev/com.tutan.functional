@@ -1,3 +1,5 @@
+global using Unit = System.ValueTuple;
+
 using System;
 using System.Linq;
 using NUnit.Framework;
