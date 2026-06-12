@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using static Tutan.Functional.F;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Tutan.Functional.Tests
@@ -505,6 +506,99 @@ namespace Tutan.Functional.Tests
         {
             Optional<int> opt = None;
             var result = opt.Bind(99, static (v, s) => Some(v + s));
+            Assert.That(result.IsNone, Is.True);
+        }
+
+        // ── State-passing Match / Then / Filter ───────────────────────
+
+        [Test]
+        public void Match_WithState_Some_UsesOnSome()
+        {
+            var opt = Some(7);
+            int offset = 3;
+            int result = opt.Match(offset, static o => -o, static (v, o) => v + o);
+            Assert.That(result, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void Match_WithState_None_PassesStateToOnNone()
+        {
+            Optional<int> opt = None;
+            int fallback = 42;
+            int result = opt.Match(fallback, static f => f, static (v, f) => v);
+            Assert.That(result, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void Match_WithState_ActionVariant_Some_RunsOnSome()
+        {
+            var opt = Some(5);
+            var sink = new List<int>();
+            opt.Match(sink, static s => s.Add(-1), static (v, s) => s.Add(v));
+            Assert.That(sink, Is.EqualTo(new[] { 5 }));
+        }
+
+        [Test]
+        public void Then_WithState_Some_Maps()
+        {
+            var opt = Some(4);
+            int factor = 5;
+            var result = opt.Then(factor, static (v, f) => v * f);
+            Assert.That(result.Match(() => -1, v => v), Is.EqualTo(20));
+        }
+
+        [Test]
+        public void Then_WithState_Some_Binds()
+        {
+            var opt = Some(4);
+            int threshold = 3;
+            var result = opt.Then(threshold, static (v, t) => v > t ? Some(v) : (Optional<int>)None);
+            Assert.That(result.IsSome, Is.True);
+        }
+
+        [Test]
+        public void Then_WithState_Some_RunsActionAndPassesThrough()
+        {
+            var opt = Some(9);
+            var sink = new List<int>();
+            var result = opt.Then(sink, static (v, s) => s.Add(v));
+            Assert.That(sink, Is.EqualTo(new[] { 9 }));
+            Assert.That(result.Match(() => -1, v => v), Is.EqualTo(9));
+        }
+
+        [Test]
+        public void Then_WithState_None_SkipsAction()
+        {
+            Optional<int> opt = None;
+            var sink = new List<int>();
+            var result = opt.Then(sink, static (v, s) => s.Add(v));
+            Assert.That(sink, Is.Empty);
+            Assert.That(result.IsNone, Is.True);
+        }
+
+        [Test]
+        public void Filter_WithState_PredicateTrue_KeepsSome()
+        {
+            var opt = Some(8);
+            int min = 5;
+            var result = opt.Filter(min, static (v, m) => v >= m);
+            Assert.That(result.IsSome, Is.True);
+        }
+
+        [Test]
+        public void Filter_WithState_PredicateFalse_ReturnsNone()
+        {
+            var opt = Some(2);
+            int min = 5;
+            var result = opt.Filter(min, static (v, m) => v >= m);
+            Assert.That(result.IsNone, Is.True);
+        }
+
+        [Test]
+        public void Filter_WithState_None_ReturnsNone()
+        {
+            Optional<int> opt = None;
+            var result = opt.Filter(0, static (v, m) => true);
             Assert.That(result.IsNone, Is.True);
         }
     }

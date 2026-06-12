@@ -1,0 +1,18 @@
+{
+    "name": "Tutan.Functional.Editor",
+    "rootNamespace": "Tutan.Functional",
+    "references": [
+        "GUID:24c3fc5ca3568e8459fa78711f324a01"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

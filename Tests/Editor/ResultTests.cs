@@ -531,5 +531,100 @@ namespace Tutan.Functional.Tests
             Assert.That(bound.IsError, Is.True);
             Assert.That(bound.ErrorUnsafe().Message, Is.EqualTo("original"));
         }
+
+        // ── State-passing Match / Then / Filter ───────────────────────
+
+        [Test]
+        public void Match_WithState_OnSuccess_UsesValue()
+        {
+            var result = Success(7);
+            int offset = 3;
+            int matched = result.Match(offset, static (e, o) => -o, static (v, o) => v + o);
+            Assert.That(matched, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void Match_WithState_OnError_PassesStateAndError()
+        {
+            Result<int> result = Error("boom");
+            string prefix = "got: ";
+            string matched = result.Match(prefix, static (e, p) => p + e.Message, static (v, p) => p + v);
+            Assert.That(matched, Is.EqualTo("got: boom"));
+        }
+
+        [Test]
+        public void Match_WithState_ActionVariant_OnError_RunsOnError()
+        {
+            Result<int> result = Error("boom");
+            var sink = new List<string>();
+            result.Match(sink, static (e, s) => s.Add(e.Message), static (v, s) => s.Add(v.ToString()));
+            Assert.That(sink, Is.EqualTo(new[] { "boom" }));
+        }
+
+        [Test]
+        public void Then_WithState_OnSuccess_Maps()
+        {
+            var result = Success(4);
+            int factor = 5;
+            var mapped = result.Then(factor, static (v, f) => v * f);
+            Assert.That(mapped.ValueUnsafe(), Is.EqualTo(20));
+        }
+
+        [Test]
+        public void Then_WithState_OnSuccess_Binds()
+        {
+            var result = Success(4);
+            int threshold = 3;
+            var bound = result.Then(threshold, static (v, t) => v > t ? Success(v) : (Result<int>)Error("too small"));
+            Assert.That(bound.IsSuccess, Is.True);
+        }
+
+        [Test]
+        public void Then_WithState_OnSuccess_RunsActionAndPassesThrough()
+        {
+            var result = Success(9);
+            var sink = new List<int>();
+            var passed = result.Then(sink, static (v, s) => s.Add(v));
+            Assert.That(sink, Is.EqualTo(new[] { 9 }));
+            Assert.That(passed.ValueUnsafe(), Is.EqualTo(9));
+        }
+
+        [Test]
+        public void Then_WithState_OnError_SkipsActionAndPropagates()
+        {
+            Result<int> result = Error("fail");
+            var sink = new List<int>();
+            var passed = result.Then(sink, static (v, s) => s.Add(v));
+            Assert.That(sink, Is.Empty);
+            Assert.That(passed.ErrorUnsafe().Message, Is.EqualTo("fail"));
+        }
+
+        [Test]
+        public void Filter_WithState_PredicateTrue_KeepsSuccess()
+        {
+            var result = Success(8);
+            int min = 5;
+            var filtered = result.Filter(min, static (v, m) => v >= m);
+            Assert.That(filtered.IsSuccess, Is.True);
+        }
+
+        [Test]
+        public void Filter_WithState_PredicateFalse_ReturnsError()
+        {
+            var result = Success(2);
+            int min = 5;
+            var filtered = result.Filter(min, static (v, m) => v >= m);
+            Assert.That(filtered.IsError, Is.True);
+            Assert.That(filtered.ErrorUnsafe().Message, Is.EqualTo("Predicate not satisfied"));
+        }
+
+        [Test]
+        public void Filter_WithState_OnError_PropagatesOriginalError()
+        {
+            Result<int> result = Error("original");
+            var filtered = result.Filter(0, static (v, m) => true);
+            Assert.That(filtered.IsError, Is.True);
+            Assert.That(filtered.ErrorUnsafe().Message, Is.EqualTo("original"));
+        }
     }
 }

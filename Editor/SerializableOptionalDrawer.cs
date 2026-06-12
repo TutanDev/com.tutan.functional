@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace Tutan.Functional.Editor
+namespace Tutan.Functional
 {
     [CustomPropertyDrawer(typeof(SerializableOptional<>), useForChildren: true)]
     public sealed class SerializableOptionalDrawer : PropertyDrawer

@@ -32,6 +32,24 @@ namespace Tutan.Functional
                 onError: e => new Result<T>(e),
                 onSuccess: v => predicate(v) ? result : new Result<T>(Error("Predicate not satisfied")));
 
+        // state-passing (avoids closure capture; allocation-free when the delegate is capture-free)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Result<R> Then<T, TState, R>(this Result<T> result, TState state, Func<T, TState, R> func) => result.Map(state, func);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Result<T> Then<T, TState>(this Result<T> result, TState state, Action<T, TState> action)
+        {
+            if (result.IsSuccess) action(result._value, state);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Result<R> Then<T, TState, R>(this Result<T> result, TState state, Func<T, TState, Result<R>> func) => result.Bind(state, func);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Result<T> Filter<T, TState>(this Result<T> result, TState state, Func<T, TState, bool> predicate)
+            => result.IsSuccess && !predicate(result._value, state) ? new Result<T>(Error("Predicate not satisfied")) : result;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSuccess<T>(this Result<T> result, out T value)
         {

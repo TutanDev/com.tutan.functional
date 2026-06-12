@@ -43,6 +43,24 @@ namespace Tutan.Functional
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<T> Filter<T>(this Optional<T> opt, Func<T, bool> predicate) => opt.IsSome && predicate(opt._value) ? opt : default;
 
+        // state-passing (avoids closure capture; allocation-free when the delegate is capture-free)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Optional<R> Then<T, TState, R>(this Optional<T> opt, TState state, Func<T, TState, R> func) => opt.Map(state, func);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Optional<T> Then<T, TState>(this Optional<T> opt, TState state, Action<T, TState> action)
+        {
+            if (opt.IsSome) action(opt._value, state);
+            return opt;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Optional<R> Then<T, TState, R>(this Optional<T> opt, TState state, Func<T, TState, Optional<R>> func) => opt.Bind(state, func);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Optional<T> Filter<T, TState>(this Optional<T> opt, TState state, Func<T, TState, bool> predicate)
+            => opt.IsSome && predicate(opt._value, state) ? opt : default;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<T> ToOptional<T>(this T? nullable) where T : struct
             => nullable.HasValue ? Some(nullable.Value) : default;

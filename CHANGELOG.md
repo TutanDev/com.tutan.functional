@@ -4,6 +4,19 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-12
+
+### Added
+- `Alive()` extension on `Optional<T>` (constrained to `UnityEngine.Object`) — re-checks Unity lifetime at point of use, returning `None` if the wrapped object was destroyed after `Some`. The monadic analogue of `if (obj)`.
+- Documented the **scope-local rule**: `Optional<T>` over a `UnityEngine.Object` snapshots fake-null at creation and is only valid within the frame/method that created it; re-lift at point of use or call `Alive()` after a frame boundary.
+- State-passing (`TState`) overloads for `Match`, `Then` (map/bind/side-effect shapes), and `Filter` on both `Optional<T>` and `Result<T>`, completing capture-free coverage of the hot-path operator set alongside the existing `Map`/`Bind`.
+
+### Changed
+- Softened "zero-allocation" wording across docs and code comments: the core structs are allocation-free, but capturing lambdas allocate per call. Added a *Performance & Hot Paths* guide (docs/Functional.md) with hot-path guidance — capture-free lambdas, state-passing `Map`/`Bind` overloads, and out-param accessors.
+
+### Fixed
+- `SerializableOptionalDrawer` moved from the editor *test* assembly into a dedicated `Editor/` assembly so the drawer actually ships to consumers.
+
 ## [0.3.0] - 2026-05-21
 
 ### Added

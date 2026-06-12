@@ -17,7 +17,13 @@ A lightweight functional programming library for Unity providing core FP primiti
 - **Validation** — `FailFast` and `HarvestErrors` combinators for composing `Validator<T>` pipelines.
 - **Safe exception handling** — `Try` wraps throwing code into `Result<T>`.
 - **IEnumerable extensions** — `Head`, `FindFirst`, `Flatten`, `DropWhile`, `Match` (head/tail decomposition), and monadic `Map`/`Bind`/`ForEach`.
-- **Unity integration** — `LookupComponent<T>`, `LookupParent` returning `Optional<T>` instead of null.
+- **Unity integration** — `LookupComponent<T>`, `LookupParent` returning `Optional<T>` instead of null, and `Alive()` to re-check object lifetime at point of use. Optionals over `UnityEngine.Object` are scope-local: `Some` snapshots fake-null at creation, so call `Alive()` whenever one crosses a frame boundary.
+
+## Performance Notes
+
+The core types (`Optional<T>`, `Result<T>`, `Error`) are allocation-free structs — but the fluent operators are only as free as the lambdas you pass them. A lambda that captures locals or `this` allocates a closure per call; a capture-free lambda is cached by the compiler and costs nothing per call.
+
+Practical rule: write for clarity in system-level code (loading, validation, config, UI events); in per-frame hot paths keep lambdas capture-free (mark them `static`), use the state-passing overloads (`Map`, `Bind`, `Then`, `Filter`, and `Match` all take a `TState`), or exit the pipeline with `HasValue(out var v)` / `IsSuccess(out var v)`. Full guidance in [docs/Functional.md → Performance & Hot Paths](docs/Functional.md#performance--hot-paths).
 
 ## Installation
 

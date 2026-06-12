@@ -47,6 +47,62 @@ An immutable value carrying a human-readable `Message`, an optional inner `Error
 
 ---
 
+## Performance & Hot Paths
+
+Be precise about what is and isn't free here, because the two are easy to conflate:
+
+**The types are allocation-free.** `Optional<T>`, `Result<T>`, and `Error` are structs — creating, returning, and matching them never touches the heap (an `Error` only allocates when you compose inner/composite errors, which builds an array).
+
+**Pipelines allocate when lambdas capture.** A lambda that closes over a local or `this` allocates a closure object and a delegate **every call**:
+
+```csharp
+// Allocates per call: the lambda captures `origin`
+Optional<float> dist = maybeTarget.Map(t => Vector3.Distance(t.position, origin));
+```
+
+A lambda that captures nothing is cached by the compiler and allocates once, ever:
+
+```csharp
+// No per-call allocation: nothing captured
+Optional<Vector3> pos = maybeTarget.Map(t => t.position);
+```
+
+### Guidance
+
+- **System-level code** — loading, validation, config, network, save data, UI events — is the sweet spot. A closure allocation in code that runs once per click or per scene load is irrelevant; write for clarity.
+- **Per-frame hot paths** — `Update`, physics callbacks, per-entity loops — need care. Three allocation-free options, in order of preference:
+
+  1. **Keep lambdas capture-free.** If the lambda only uses its parameter, it's cached automatically.
+  2. **Use the state-passing overloads** to pass locals as an argument instead of capturing them. `Map`, `Bind`, `Then`, `Filter`, and `Match` all have `TState` forms on both `Optional<T>` and `Result<T>`, so a whole hot pipeline can stay capture-free end to end. Mark the lambdas `static` and the compiler *enforces* it:
+
+     ```csharp
+     // `origin` travels as TState — `static` guarantees no capture
+     float dist = maybeTarget
+         .Alive()
+         .Map(origin, static (t, o) => Vector3.Distance(t.position, o))
+         .Match(float.PositiveInfinity, static d => d, static (v, _) => v);
+     ```
+
+     Need more than one local? Pack a value tuple — still no allocation:
+
+     ```csharp
+     maybeTarget.Filter((minDist, origin), static (t, s) => Vector3.Distance(t.position, s.origin) > s.minDist);
+     ```
+
+  3. **Exit the pipeline with the out-param accessors** and use plain control flow:
+
+     ```csharp
+     if (maybeTarget.HasValue(out var target))
+         Steer(target.position);
+     ```
+
+- Method-group arguments (`.Map(Transform.GetPosition)`) also allocate a delegate per call under C# 10 — prefer an explicit capture-free lambda in hot paths.
+- `Try` allocates when an exception is actually thrown (`ex.ToString()`); that's the exceptional path paying, which is the right trade.
+
+In short: this is an **allocation-conscious** library, not a zero-allocation one. The data types cost nothing; the fluent style costs what closures always cost in C#. Spend that cost where frames don't.
+
+---
+
 ## Quick Install
 
 Add the package to `Packages/manifest.json`:
@@ -76,7 +132,7 @@ using static Tutan.Functional.F;   // brings Some, None, Success, Try, etc. into
 
 | | Guide | What it covers |
 |---|---|---|
-| 📖 | [Why this library](Functional) | The problem, the approach, quick install |
+| 📖 | [Why this library](Functional) | The problem, the approach, performance & hot paths, quick install |
 | ❓ | [Optional\<T\>](Optional) | Construction, `Then`, `Or`, `Filter`, `Match`, Unity examples |
 | ⚠️ | [Result\<T\>](Result) | Construction, `Then`, `Filter`, `Match`, pipeline patterns |
 | 🔴 | [Error](Error) | Simple, nested, composite errors; logging; converting exceptions |

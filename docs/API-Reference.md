@@ -146,12 +146,18 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 | `Optional<T> Where<T>(this Optional<T> opt, Func<T,bool> predicate)` | Enables `where` clause |
 | `Optional<RR> SelectMany<T,R,RR>(...)` | Enables multiple `from` clauses |
 
-#### State-passing (allocation-free)
+#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional#performance--hot-paths))
 
 | Signature | Description |
 |---|---|
 | `Optional<R> Map<T,TState,R>(this Optional<T> opt, TState state, Func<T,TState,R> f)` | Map without capturing state in a closure |
 | `Optional<R> Bind<T,TState,R>(this Optional<T> opt, TState state, Func<T,TState,Optional<R>> f)` | Bind without closure capture |
+| `R Match<TState,R>(TState state, Func<TState,R> onNone, Func<T,TState,R> onSome)` | Match without closure capture (instance method) |
+| `Unit Match<TState>(TState state, Action<TState> onNone, Action<T,TState> onSome)` | Side-effect match without closure capture (instance method) |
+| `Optional<R> Then<T,TState,R>(this Optional<T> opt, TState state, Func<T,TState,R> func)` | State-passing map alias |
+| `Optional<R> Then<T,TState,R>(this Optional<T> opt, TState state, Func<T,TState,Optional<R>> func)` | State-passing bind alias |
+| `Optional<T> Then<T,TState>(this Optional<T> opt, TState state, Action<T,TState> action)` | State-passing side-effect, passes value through |
+| `Optional<T> Filter<T,TState>(this Optional<T> opt, TState state, Func<T,TState,bool> predicate)` | Filter without closure capture |
 
 #### Async (see also [Async.md](Async.md))
 
@@ -274,12 +280,18 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `Result<R> Select<T,R>(this Result<T> result, Func<T,R> f)` | Enables `from x in result select ...` |
 | `Result<RR> SelectMany<T,R,RR>(...)` | Enables multiple `from` clauses |
 
-#### State-passing (allocation-free)
+#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional#performance--hot-paths))
 
 | Signature | Description |
 |---|---|
 | `Result<R> Map<T,TState,R>(this Result<T> result, TState state, Func<T,TState,R> f)` | Map without closure capture |
 | `Result<R> Bind<T,TState,R>(this Result<T> result, TState state, Func<T,TState,Result<R>> f)` | Bind without closure capture |
+| `R Match<TState,R>(TState state, Func<Error,TState,R> onError, Func<T,TState,R> onSuccess)` | Match without closure capture (instance method) |
+| `Unit Match<TState>(TState state, Action<Error,TState> onError, Action<T,TState> onSuccess)` | Side-effect match without closure capture (instance method) |
+| `Result<R> Then<T,TState,R>(this Result<T> result, TState state, Func<T,TState,R> func)` | State-passing map alias |
+| `Result<R> Then<T,TState,R>(this Result<T> result, TState state, Func<T,TState,Result<R>> func)` | State-passing bind alias |
+| `Result<T> Then<T,TState>(this Result<T> result, TState state, Action<T,TState> action)` | State-passing side-effect, passes value through |
+| `Result<T> Filter<T,TState>(this Result<T> result, TState state, Func<T,TState,bool> predicate)` | Filter without closure capture; `Error("Predicate not satisfied")` on false |
 
 #### Async (see also [Async.md](Async.md))
 
@@ -381,3 +393,4 @@ A function that validates a value and returns `Success(t)` or an `Error`.
 | `Optional<T> LookupComponent<T>(this GameObject go) where T : Component` | Safe `TryGetComponent`; `None` when null/destroyed or component absent |
 | `Optional<Transform> LookupParent(this Transform t)` | Safe parent access; `None` when no parent or destroyed |
 | `Optional<T> Lookup<K,T>(this IDictionary<K,T> dict, K key)` | Safe dictionary access; `None` on missing key |
+| `Optional<T> Alive<T>(this Optional<T> opt) where T : UnityEngine.Object` | Re-checks Unity lifetime; `None` if the wrapped object was destroyed after `Some` |

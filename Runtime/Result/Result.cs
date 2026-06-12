@@ -50,6 +50,19 @@ namespace Tutan.Functional
             return default;
         }
 
+        // state-passing (avoids closure capture; allocation-free when the delegates are capture-free)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public R Match<TState, R>(TState state, Func<Error, TState, R> onError, Func<T, TState, R> onSuccess)
+            => _isSuccess ? onSuccess(_value, state) : onError(_error, state);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Unit Match<TState>(TState state, Action<Error, TState> onError, Action<T, TState> onSuccess)
+        {
+            if (_isSuccess) onSuccess(_value, state);
+            else onError(_error, state);
+            return default;
+        }
+
 
         public override string ToString() => _isSuccess ? $"Success: {_value}" : $"Error: {_error}";
         public static implicit operator Result<T>(T value) => Success(value);

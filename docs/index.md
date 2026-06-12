@@ -29,7 +29,7 @@ fails — explicitly, as a value, composable in a pipeline.
 
 | | Guide | What it covers |
 |---|---|---|
-| 📖 | [Why this library](Functional) | The problem, the approach, quick install |
+| 📖 | [Why this library](Functional) | The problem, the approach, performance & hot paths, quick install |
 | ❓ | [Optional\<T\>](Optional) | Construction, `Then`, `Or`, `Filter`, `Match`, Unity examples |
 | ⚠️ | [Result\<T\>](Result) | Construction, `Then`, `Filter`, `Match`, pipeline patterns |
 | 🔴 | [Error](Error) | Simple, nested, composite errors; logging; converting exceptions |

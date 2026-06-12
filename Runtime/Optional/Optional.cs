@@ -45,6 +45,19 @@ namespace Tutan.Functional
             return default;
         }
 
+        // state-passing (avoids closure capture; allocation-free when the delegates are capture-free)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public R Match<TState, R>(TState state, Func<TState, R> onNone, Func<T, TState, R> onSome)
+            => _isSome ? onSome(_value, state) : onNone(state);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Unit Match<TState>(TState state, Action<TState> onNone, Action<T, TState> onSome)
+        {
+            if (_isSome) onSome(_value, state);
+            else onNone(state);
+            return default;
+        }
+
 
         public override string ToString() => _isSome ? $"Some: {_value}" : "None";
         public static implicit operator Optional<T>(T value) => Some(value);

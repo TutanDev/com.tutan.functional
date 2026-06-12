@@ -14,7 +14,8 @@ namespace Tutan.Functional
     }
 
     /// <summary>
-    /// An immutable, zero-allocation error value (16 bytes on 64-bit).
+    /// An immutable error value (16 bytes on 64-bit). The struct itself never allocates;
+    /// constructors that take an inner error or a collection allocate the inner array.
     /// <para>
     /// <see cref="InnerErrors"/> returns a <see cref="ReadOnlySpan{T}"/> which cannot be
     /// stored in class fields, used across async boundaries, or passed to LINQ without

@@ -49,7 +49,7 @@ namespace Tutan.Functional
         public static IEnumerable<R> Bind<T, R>(this Optional<T> opt, Func<T, IEnumerable<R>> func)
             => opt.AsEnumerable().Bind(func);
 
-        // state-passing (zero-alloc hot paths)
+        // state-passing (avoids closure capture; allocation-free when `f` is capture-free)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<R> Map<T, TState, R>(this Optional<T> opt, TState state, Func<T, TState, R> f)
             => opt.IsSome ? Some(f(opt._value, state)) : default;

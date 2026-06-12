@@ -48,7 +48,7 @@ namespace Tutan.Functional
         public static IEnumerable<R> Bind<T, R>(this Result<T> @this, Func<T, IEnumerable<R>> func)
             => @this.AsEnumerable().Bind(func);
 
-        // state-passing (zero-alloc hot paths)
+        // state-passing (avoids closure capture; allocation-free when `f` is capture-free)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<R> Map<T, TState, R>(this Result<T> result, TState state, Func<T, TState, R> f)
             => result.IsSuccess ? Success(f(result._value, state)) : result._error;
