@@ -23,7 +23,7 @@ A lightweight functional programming library for Unity providing core FP primiti
 
 The core types (`Optional<T>`, `Result<T>`, `Error`) are allocation-free structs — but the fluent operators are only as free as the lambdas you pass them. A lambda that captures locals or `this` allocates a closure per call; a capture-free lambda is cached by the compiler and costs nothing per call.
 
-Practical rule: write for clarity in system-level code (loading, validation, config, UI events); in per-frame hot paths keep lambdas capture-free (mark them `static`), use the state-passing overloads (`Map`, `Bind`, `Then`, `Filter`, and `Match` all take a `TState`), or exit the pipeline with `HasValue(out var v)` / `IsSuccess(out var v)`. Full guidance in [docs/Functional.md → Performance & Hot Paths](docs/Functional.md#performance--hot-paths).
+Practical rule: write for clarity in system-level code (loading, validation, config, UI events); in per-frame hot paths keep lambdas capture-free (mark them `static`), use the state-passing overloads (`Map`, `Bind`, `Then`, `Filter`, and `Match` all take a `TState`), or exit the pipeline with `HasValue(out var v)` / `IsSuccess(out var v)`. Full guidance in [Documentation~/Functional.md → Performance & Hot Paths](Documentation~/Functional.md#performance--hot-paths).
 
 ## Installation
 
