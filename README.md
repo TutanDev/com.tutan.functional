@@ -6,7 +6,7 @@ A lightweight functional programming library for Unity providing core FP primiti
 
 - **`Optional<T>`** — A value that may or may not exist. Replaces null checks with explicit `Some`/`None` semantics. Handles Unity's fake-null (`UnityEngine.Object`) transparently.
 - **`Result<T>`** — An operation outcome carrying either a success value `T` or an `Error`. Replaces exception-based error handling with composable, type-safe results.
-- **`Error`** — A record type with `Message`, optional `Inner` error, and composite `InnerErrors` for validation scenarios.
+- **`Error`** — An immutable struct with a `Message`, an optional integer `Code`, and nested/composite `InnerErrors` for validation scenarios.
 - **`Unit`** — Alias for `System.ValueTuple`, used as a void substitute in functional signatures.
 
 ## Key Features

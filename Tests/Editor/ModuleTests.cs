@@ -49,7 +49,7 @@ namespace Tutan.Functional.Tests
             bool executed = false;
             Action sideEffect = () => executed = true;
 
-            Func<Unit> teed = Tee<int>(sideEffect);
+            Func<Unit> teed = Tee(sideEffect);
             Unit result = teed();
 
             Assert.IsTrue(executed);

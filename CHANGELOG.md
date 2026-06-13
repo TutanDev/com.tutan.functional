@@ -4,6 +4,11 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-06-13
+
+### Fixed
+- Removed an unused type parameter from `F.Tee(Action)` — the overload was declared `Tee<T>(Action)` but never used `T`, forcing callers to supply a meaningless type argument. The `Tee<T>(Action<T>)` pass-through overload is unaffected.
+
 ## [0.4.0] - 2026-06-12
 
 ### Added
@@ -20,8 +25,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.3.0] - 2026-05-21
 
 ### Added
-- `Tutan.Functional.Unity` assembly with `SerializableOptional<T>` — `[Serializable]` inspector-friendly wrapper around `Optional<T>` with implicit conversions both ways.
-- `Tutan.Functional.Unity.Editor` assembly with `SerializableOptionalDrawer` — UI Toolkit `PropertyDrawer` rendering a toggle plus the inner value field.
+- `SerializableOptional<T>` in the `Tutan.Functional` runtime assembly — `[Serializable]` inspector-friendly wrapper around `Optional<T>` with implicit conversions both ways.
+- `SerializableOptionalDrawer` — UI Toolkit `PropertyDrawer` rendering a toggle plus the inner value field. (Initially shipped in the editor test assembly; moved to a dedicated `Editor/` assembly in 0.4.0.)
+- `Error.Code` — optional `int` error code with `Error(message, code)` / `Error(message, code, inner)` constructors and matching `F.Error` helpers. Participates in equality.
 
 ## [0.1.0] - 2026-02-12
 

@@ -14,7 +14,7 @@ namespace Tutan.Functional
 
         public static IEnumerable<T> List<T>(params T[] items) => items.AsEnumerable();
 
-        public static Func<Unit> Tee<T>(Action function) => () =>
+        public static Func<Unit> Tee(Action function) => () =>
         {
             function();
             return default;

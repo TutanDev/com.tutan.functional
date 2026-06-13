@@ -115,7 +115,7 @@ Add the package to `Packages/manifest.json`:
 }
 ```
 
-Add an assembly reference to `com.tutan.functional` in your `.asmdef`.
+Add an assembly reference to `Tutan.Functional` in your `.asmdef`.
 
 Then add this using at the top of any file (or once in a `GlobalUsings.cs`):
 

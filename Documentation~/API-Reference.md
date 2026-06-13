@@ -38,7 +38,9 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 | Signature | Description |
 |---|---|
 | `Error Error(string message)` | Simple error with a message |
+| `Error Error(string message, int code)` | Error with a machine-readable code |
 | `Error Error(string message, Error inner)` | Nested error — message + cause |
+| `Error Error(string message, int code, Error inner)` | Nested error with a code |
 | `Error Error(IEnumerable<Error> errors)` | Composite error — joins all messages; stores all as inner errors |
 
 ### Exception wrapping
@@ -128,6 +130,8 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 | Signature | Description |
 |---|---|
 | `IEnumerable<T> AsEnumerable<T>(this Optional<T> opt)` | Zero or one element; safe to iterate |
+| `IEnumerable<R> Bind<T,R>(this Optional<T> opt, Func<T,IEnumerable<R>> func)` | Flat-maps into a sequence (empty when `None`) |
+| `IEnumerable<Optional<R>> Traverse<T,R>(this Optional<T> opt, Func<T,IEnumerable<R>> func)` | Distributes the `Optional` over a sequence-producing function |
 | `Result<T> ToResult<T>(this Optional<T> opt, Func<Error> onNone)` | Converts `None` to an error |
 | `Optional<T> ToOptional<T>(this T? nullable) where T : struct` | Converts a nullable struct |
 
@@ -176,6 +180,8 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 | `UniTask<R> Match<T,R>(this UniTask<Optional<T>> optTask, Func<R> onNone, Func<T,R> onSome)` | Sync match on async optional |
 | `UniTask Match<T>(this UniTask<Optional<T>> optTask, Action onNone, Action<T> onSome)` | Void sync match on async optional |
 | `UniTask<R> MatchAsync<T,R>(this UniTask<Optional<T>> optTask, Func<UniTask<R>> onNone, Func<T,UniTask<R>> onSome)` | Async match on async optional |
+
+> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators — same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
 
 ---
 
@@ -264,6 +270,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | Signature | Description |
 |---|---|
 | `IEnumerable<T> AsEnumerable<T>(this Result<T> result)` | Zero or one element; safe to iterate |
+| `IEnumerable<R> Bind<T,R>(this Result<T> result, Func<T,IEnumerable<R>> func)` | Flat-maps into a sequence (empty on error) |
 | `Optional<T> ToOptional<T>(this Result<T> result)` | Discards the error; converts success to `Some` |
 
 #### Applicative
@@ -311,6 +318,8 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `UniTask Match<T>(this UniTask<Result<T>> resultTask, Action<Error> onError, Action<T> onSuccess)` | Void sync match on async result |
 | `UniTask<R> MatchAsync<T,R>(this UniTask<Result<T>> resultTask, Func<Error,UniTask<R>> onError, Func<T,UniTask<R>> onSuccess)` | Async match on async result |
 
+> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators — same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
+
 ---
 
 ## `Error` (`readonly struct`, `IEquatable<Error>`)
@@ -320,7 +329,9 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | Signature | Description |
 |---|---|
 | `Error(string message)` | Simple error |
+| `Error(string message, int code)` | Error with a machine-readable code |
 | `Error(string message, Error inner)` | Nested error |
+| `Error(string message, int code, Error inner)` | Nested error with a code |
 | `Error(IEnumerable<Error> errors)` | Composite — joins all messages; stores all as inner |
 | `(implicit) Error(string message)` | Implicit cast from `string` |
 
@@ -329,6 +340,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | Signature | Description |
 |---|---|
 | `string Message` | Human-readable error description |
+| `int Code` | Optional machine-readable error code; `0` when unspecified |
 | `ReadOnlySpan<Error> InnerErrors` | Inner errors (empty span when none). Cannot cross async boundaries — call `.ToArray()` if needed. |
 
 ### Methods
@@ -337,7 +349,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 |---|---|
 | `IEnumerable<Error> AsEnumerable()` | Leaf errors: `{ this }` for simple/nested; inner errors for composite |
 | `override string ToString()` | Returns `Message` (or `string.Empty` for default) |
-| `bool Equals(Error other)` | Deep equality — compares `Message` and all inner errors |
+| `bool Equals(Error other)` | Deep equality — compares `Message`, `Code`, and all inner errors |
 
 ---
 
