@@ -67,5 +67,9 @@ namespace Tutan.Functional
         public override string ToString() => _isSuccess ? $"Success: {_value}" : $"Error: {_error}";
         public static implicit operator Result<T>(T value) => Success(value);
         public static implicit operator Result<T>(Error error) => new(error);
+
+        // Enables `if (result)` / `result && other` short-circuiting on the success branch.
+        public static bool operator true(Result<T> result) => result._isSuccess;
+        public static bool operator false(Result<T> result) => !result._isSuccess;
     }
 }

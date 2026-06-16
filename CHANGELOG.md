@@ -4,6 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-16
+
+### Added
+- `F.Fail(...)` / `F.Fail<T>(...)` failure factories (`string` or `Error`) — the partner of `Success()`/`Success<T>(value)`, for when an explicit fail reads better than relying on the implicit `Error → Result<T>` conversion.
+- `IfFail` extensions on `Result<T>` — a `Func<Error, Result<T>>` form for Result-space recovery and an `Action<Error>` form that observes the error and passes the `Result` through unchanged.
+- `Match` overloads on `Result<Unit>` that take a parameterless success branch (`Func<R>` / `Action`) so void results read as `() => …` instead of `_ => …`. Disambiguated from the instance `Match` by the success delegate's arity.
+- `operator true` / `operator false` on `Result<T>`, enabling `if (result)` and `&&`/`||` short-circuiting on the success branch.
+
 ## [0.4.1] - 2026-06-13
 
 ### Fixed
