@@ -102,6 +102,45 @@ public class PlayerBootstrap : MonoBehaviour
 }
 ```
 
+## Void results (`Result<Unit>`)
+
+When an operation either succeeds or fails but carries no value, the result type is `Result<Unit>`. Build one with `Success()` / `Fail(...)`, and match it with a parameterless success branch:
+
+```csharp
+using Tutan.Functional;
+using static Tutan.Functional.F;
+
+public Result<Unit> SaveScore(int score)
+{
+    if (score < 0)
+        return Fail("Score cannot be negative");   // implicit Error → Result<Unit> also works
+
+    // ... persist ...
+    return Success();
+}
+
+public void Report(int score)
+{
+    SaveScore(score).Match(
+        onError:   e  => Debug.LogError(e.Message),
+        onSuccess: () => Debug.Log("Saved"));        // no throwaway Unit argument
+}
+```
+
+`IfFail` runs only on the error branch — either to recover into another `Result` or to observe the error and pass the original through:
+
+```csharp
+SaveScore(score)
+    .IfFail(e => Debug.LogWarning($"Save failed: {e.Message}"));   // Action<Error>, returns the Result
+```
+
+A `Result<T>` is also truthy on success, so a plain guard reads naturally:
+
+```csharp
+if (SaveScore(score))
+    Debug.Log("Saved");
+```
+
 ## Practical guidance
 
 - Use `Result<T>` when you need to explain **why** something failed.

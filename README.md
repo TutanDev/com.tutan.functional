@@ -12,7 +12,7 @@ A lightweight functional programming library for Unity providing core FP primiti
 ## Key Features
 
 - **Monadic API** — `Map`, `Bind`, `Apply`, and LINQ query syntax (`from x in opt select ...`) on both `Optional<T>` and `Result<T>`.
-- **Fluent chaining** — `Then` as a unified synonym for `Map`/`Bind`, plus `Or`/`OrElse` fallbacks, and `Filter` predicates.
+- **Fluent chaining** — `Then` as a unified synonym for `Map`/`Bind`, plus `Or`/`OrElse`/`IfFail` fallbacks, and `Filter` predicates.
 - **Currying & Piping** — `Curry`, `CurryFirst` (up to 9 type parameters), `Pipe`, and `Tee` for point-free composition.
 - **Validation** — `FailFast` and `HarvestErrors` combinators for composing `Validator<T>` pipelines.
 - **Safe exception handling** — `Try` wraps throwing code into `Result<T>`.

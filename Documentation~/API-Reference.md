@@ -32,6 +32,10 @@ Brought into scope automatically via `global using static Tutan.Functional.F`.
 |---|---|
 | `Result<Unit> Success()` | Creates a successful `Result` with no value |
 | `Result<T> Success<T>(T value)` | Creates a successful `Result`. Returns `Error("Value is null")` for null references and destroyed Unity objects. |
+| `Result<Unit> Fail(Error error)` | Creates a failed `Result` with no value — the partner of `Success()` |
+| `Result<Unit> Fail(string message)` | Same, from a message string |
+| `Result<T> Fail<T>(Error error)` | Creates a failed `Result<T>` — explicit alternative to the implicit `Error → Result<T>` cast |
+| `Result<T> Fail<T>(string message)` | Same, from a message string |
 
 ### Error construction
 
@@ -233,6 +237,12 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `bool IsSuccess` | `true` when the operation succeeded |
 | `bool IsError` | `true` when the operation failed |
 
+### Operators
+
+| Signature | Description |
+|---|---|
+| `operator true` / `operator false` | Truthy on success — enables `if (result)` and `&&` / `\|\|` short-circuiting on the success branch |
+
 ### Core methods
 
 | Signature | Description |
@@ -252,6 +262,17 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `T Or<T>(this Result<T> result, T fallback)` | Returns value or `fallback` |
 | `T OrElse<T>(this Result<T> result, Func<T> fallback)` | Returns value or `fallback()` |
 | `T OrElse<T>(this Result<T> result, Func<Error,T> fallback)` | Returns value or `fallback(error)` |
+| `Result<T> IfFail<T>(this Result<T> result, Func<Error,Result<T>> fallback)` | Recovers an error into another `Result<T>`; passes success through |
+| `Result<T> IfFail<T>(this Result<T> result, Action<Error> onError)` | Runs a side-effect on the error branch; passes the `Result` through unchanged |
+
+#### Void results (`Result<Unit>`)
+
+`Match` overloads that drop the throwaway `Unit` argument on the success branch — write `() => …` instead of `_ => …`. Disambiguated from the instance `Match` by the success delegate's arity.
+
+| Signature | Description |
+|---|---|
+| `R Match<R>(this Result<Unit> result, Func<Error,R> onError, Func<R> onSuccess)` | Pattern match with a parameterless success branch |
+| `Unit Match(this Result<Unit> result, Action<Error> onError, Action onSuccess)` | Void pattern match with a parameterless success branch |
 
 #### Transformation
 
