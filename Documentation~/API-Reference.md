@@ -10,7 +10,7 @@ Scannable reference for every public member. Signatures are simplified (type con
 
 ## F — static module (`Tutan.Functional.F`)
 
-Brought into scope automatically via `global using static Tutan.Functional.F`.
+Bring into scope with `using static Tutan.Functional.F;` (or a `global using static` in your own assembly).
 
 ### Core
 
@@ -230,6 +230,8 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `(implicit) Result<T>(T value)` | Via `Success(value)` or implicit cast from `T` |
 | `(implicit) Result<T>(Error error)` | Via implicit cast from `Error` |
 
+> `default(Result<T>)` is an **error** carrying an empty-message `Error` - a zeroed struct never masquerades as success.
+
 ### Properties
 
 | Signature | Description |
@@ -418,6 +420,13 @@ A function that validates a value and returns `Success(t)` or an `Error`.
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,IEnumerable<R>> func)` | Alias for `SelectMany` |
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,Optional<R>> func)` | Flat-map filtering `None` |
 | `IEnumerable<Unit> ForEach<T>(this IEnumerable<T> ts, Action<T> action)` | Side-effect over sequence (lazy) |
+
+### UniTask additions (compiled into the UniTask assembly via `.asmref`)
+
+| Signature | Description |
+|---|---|
+| `void UniTask.Void<T1,T2>(Func<T1,T2,UniTaskVoid> asyncAction, T1 arg1, T2 arg2)` | Fire-and-forget launch with explicit arguments instead of a capturing closure (2-5 argument overloads) |
+| `UniTask UniTask.WaitUntil<TState>(Func<TState,bool> predicate, TState state, PlayerLoopTiming timing = Update, CancellationToken ct = default)` | State-passing `WaitUntil`; state is held strongly - cancel via the token |
 
 ### `LookupExtensions`
 

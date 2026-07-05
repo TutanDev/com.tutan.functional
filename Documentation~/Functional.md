@@ -105,6 +105,8 @@ In short: this is an **allocation-conscious** library, not a zero-allocation one
 
 ## Quick Install
 
+**Prerequisite:** the package requires [UniTask](https://github.com/Cysharp/UniTask). Install it first (see [Async](Async) for the manifest entry) - without it the package does not compile.
+
 Add the package to `Packages/manifest.json`:
 
 ```json
@@ -117,14 +119,14 @@ Add the package to `Packages/manifest.json`:
 
 Add an assembly reference to `Tutan.Functional` in your `.asmdef`.
 
-Then add this using at the top of any file (or once in a `GlobalUsings.cs`):
+Then add this using at the top of any file:
 
 ```csharp
 using Tutan.Functional;
 using static Tutan.Functional.F;   // brings Some, None, Success, Try, etc. into scope
 ```
 
-> The package ships `global using static Tutan.Functional.F` automatically for assemblies that reference it, so in most cases these module-level helpers are already in scope.
+> C# `global using` directives only apply inside the assembly that declares them, so the package cannot bring `F` into scope for you. To get the helpers everywhere without per-file usings, add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly.
 
 ---
 

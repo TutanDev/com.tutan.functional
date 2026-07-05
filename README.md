@@ -27,11 +27,14 @@ Practical rule: write for clarity in system-level code (loading, validation, con
 
 ## Installation
 
-Add to your project's `Packages/manifest.json`:
+**Prerequisite:** the package requires [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`). Install it first - the package does not compile without it.
+
+Add both to your project's `Packages/manifest.json`:
 
 ```json
 {
   "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.tutan.functional": "https://github.com/TutanDev/com.tutan.functional.git"
   }
 }
@@ -40,6 +43,7 @@ Add to your project's `Packages/manifest.json`:
 Or clone/copy the package folder into your project's `Packages/` directory.
 
 Consumer assemblies must add `Tutan.Functional` to their `.asmdef` references.
+To bring the `F` module helpers (`Some`, `None`, `Success`, `Try`, ...) into scope, add `using static Tutan.Functional.F;` per file, or `global using static Tutan.Functional.F;` once in your own assembly.
 
 ## Quick Example
 
@@ -64,4 +68,5 @@ string message = parsed
 ## Requirements
 
 - Unity 6000.1+
+- [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`) - hard dependency, installed separately
 - C# 10 (enabled via `csc.rsp`)

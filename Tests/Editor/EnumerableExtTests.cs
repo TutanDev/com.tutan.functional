@@ -76,6 +76,17 @@ namespace Tutan.Functional.Tests
             Assert.IsTrue(result.IsNone);
         }
 
+        // 6b. FindFirst on null source returns None (matches Head)
+        [Test]
+        public void FindFirst_NullSource_ReturnsNone()
+        {
+            IEnumerable<int> nullList = null;
+
+            var result = nullList.FindFirst(x => x > 0);
+
+            Assert.IsTrue(result.IsNone);
+        }
+
         // 7. FindFirst with multiple matches returns the first one
         [Test]
         public void FindFirst_MultipleMatches_ReturnsFirst()

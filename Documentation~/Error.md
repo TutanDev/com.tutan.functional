@@ -62,7 +62,8 @@ The composite constructor joins messages with `"; "` and stores all errors as in
 
 ```csharp
 Result<int> result = Try(() => int.Parse("bad"));
-// On failure, result._error.Message == the exception's ToString()
+// On failure, the carried Error's Message is the exception's full ToString():
+result.IfFail(e => Debug.LogError(e.Message));
 ```
 
 You can also do this manually:
@@ -140,7 +141,7 @@ public class GameSaveService
         Result<SaveData> ParseSave(string json)
         {
             var data = JsonUtility.FromJson<SaveData>(json);
-            if (data == null) return Error("JSON parsed to null", Error($"Input: {json[..40]}"));
+            if (data == null) return Error("JSON parsed to null", Error($"Input: {json[..System.Math.Min(json.Length, 40)]}"));
             return Success(data);
         }
     }

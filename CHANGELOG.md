@@ -4,6 +4,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-07-05
+
+First Unity Asset Store release.
+
+### Added
+- XML documentation comments (`<summary>`, and `<param>`/`<remarks>` where they add information) across the entire public API: `Optional<T>`, `Result<T>`, `Error`, the `F` module, all extension classes, the async surface, and the `UniTask.Void`/`UniTask.WaitUntil` additions.
+- Documented the `UniTask.Void` / state-passing `UniTask.WaitUntil` additions (shipped since 0.2.0 but previously absent from the docs) in `Documentation~/Async.md` and the API reference.
+- `Third Party Notices.md` now contains the actual UniTask MIT license text (was an unfilled template).
+- `keywords`, `documentationUrl`, and `changelogUrl` in `package.json`.
+
+### Changed
+- **UniTask is now a documented manual prerequisite instead of a `package.json` dependency.** UPM does not support Git URLs in a package's `dependencies` block, so the previous declaration could not resolve; README, `Documentation~`, and the store listing now state the requirement explicitly. The compile-time dependency is unchanged.
+- Corrected docs that claimed the package ships `global using static Tutan.Functional.F` for consuming assemblies - C# global usings do not cross assembly boundaries; consumers add the using themselves.
+- Documented that `default(Result<T>)` is an error carrying an empty-message `Error`, and that `EnumerableExt.Match` enumerates its source twice.
+
+### Fixed
+- `EnumerableExt.FindFirst` now returns `None` for a null source instead of throwing, matching `Head`.
+
 ## [0.5.0] - 2026-06-16
 
 ### Added
@@ -36,6 +54,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `SerializableOptional<T>` in the `Tutan.Functional` runtime assembly — `[Serializable]` inspector-friendly wrapper around `Optional<T>` with implicit conversions both ways.
 - `SerializableOptionalDrawer` — UI Toolkit `PropertyDrawer` rendering a toggle plus the inner value field. (Initially shipped in the editor test assembly; moved to a dedicated `Editor/` assembly in 0.4.0.)
 - `Error.Code` — optional `int` error code with `Error(message, code)` / `Error(message, code, inner)` constructors and matching `F.Error` helpers. Participates in equality.
+
+## [0.2.0] - 2026-02-25
+
+*(entry reconstructed from git history; it was missing at release time)*
+
+### Added
+- Async support built on UniTask, mirroring the sync operator set on both `Optional<T>` and `Result<T>`: `MapAsync`, `BindAsync`, `ThenAsync`, `MatchAsync`, plus `Then`/`Map`/`Bind`/`Match` overloads on `UniTask<Optional<T>>` / `UniTask<Result<T>>`.
+- `F.TryAsync` for wrapping throwing async code into `UniTask<Result<T>>`.
+- `UniTask.Void` (2-5 argument overloads) and state-passing `UniTask.WaitUntil<TState>`, compiled into the UniTask assembly via `UniTaskRef.asmref`.
+- UniTask became a required dependency of the package.
 
 ## [0.1.0] - 2026-02-12
 

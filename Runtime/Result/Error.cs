@@ -6,10 +6,19 @@ namespace Tutan.Functional
 {
     public static partial class F
     {
+        /// <summary>Creates a simple error with a message.</summary>
         public static Error Error(string message) => new Error(message);
+
+        /// <summary>Creates an error with a machine-readable code.</summary>
         public static Error Error(string message, int code) => new Error(message, code);
+
+        /// <summary>Creates a nested error: a high-level message wrapping a lower-level cause.</summary>
         public static Error Error(string message, Error inner) => new Error(message, inner);
+
+        /// <summary>Creates a nested error with a machine-readable code.</summary>
         public static Error Error(string message, int code, Error inner) => new Error(message, code, inner);
+
+        /// <summary>Creates a composite error: joins all messages with <c>"; "</c> and stores every error as an inner error.</summary>
         public static Error Error(IEnumerable<Error> errors) => new Error(errors);
     }
 
@@ -28,14 +37,19 @@ namespace Tutan.Functional
         private readonly int _code;
         private readonly Error[] _inner;
 
+        /// <summary>The human-readable description of this error.</summary>
         public string Message => _message;
+
+        /// <summary>Optional machine-readable error code; <c>0</c> when unspecified. Participates in equality.</summary>
         public int Code => _code;
 
+        /// <summary>Inner errors (empty span when none).</summary>
         /// <remarks>Returns a <see cref="ReadOnlySpan{T}"/>; cannot cross async boundaries.</remarks>
         public ReadOnlySpan<Error> InnerErrors => _inner ?? Array.Empty<Error>();
 
         private bool HasInner => _inner is { Length: > 0 };
 
+        /// <summary>Creates a simple error with a message.</summary>
         public Error(string message)
         {
             _message = message;
@@ -43,6 +57,7 @@ namespace Tutan.Functional
             _inner = null;
         }
 
+        /// <summary>Creates an error with a machine-readable code.</summary>
         public Error(string message, int code)
         {
             _message = message;
@@ -50,6 +65,7 @@ namespace Tutan.Functional
             _inner = null;
         }
 
+        /// <summary>Creates a nested error: a high-level message wrapping a lower-level cause.</summary>
         public Error(string message, Error inner)
         {
             _message = message;
@@ -57,6 +73,7 @@ namespace Tutan.Functional
             _inner = new[] { inner };
         }
 
+        /// <summary>Creates a nested error with a machine-readable code.</summary>
         public Error(string message, int code, Error inner)
         {
             _message = message;
@@ -64,6 +81,7 @@ namespace Tutan.Functional
             _inner = new[] { inner };
         }
 
+        /// <summary>Creates a composite error: joins all messages with <c>"; "</c> and stores every error as an inner error. This is the shape produced by <c>HarvestErrors</c>.</summary>
         public Error(IEnumerable<Error> errors)
         {
             var arr = errors.ToArray();
@@ -72,13 +90,17 @@ namespace Tutan.Functional
             _inner = arr;
         }
 
+        /// <summary>Implicit conversion from a message string to a simple error.</summary>
         public static implicit operator Error(string message) => new(message);
 
+        /// <summary>Flattens for logging or iteration: the inner errors for a composite, otherwise <c>{ this }</c>.</summary>
         public IEnumerable<Error> AsEnumerable()
             => HasInner ? _inner : new[] { this };
 
+        /// <summary>Returns <see cref="Message"/> (or <see cref="string.Empty"/> for a default <see cref="Error"/>).</summary>
         public override string ToString() => _message ?? string.Empty;
 
+        /// <summary>Deep equality: compares <see cref="Message"/>, <see cref="Code"/>, and all inner errors.</summary>
         public bool Equals(Error other)
             => _message == other._message && _code == other._code && ErrorArraysEqual(_inner, other._inner);
 

@@ -3,20 +3,31 @@ using System.Threading;
 
 namespace Cysharp.Threading.Tasks
 {
+    // Shipped by Tutan.Functional and compiled into the UniTask assembly via UniTaskRef.asmref,
+    // extending the two-argument forms UniTask itself provides.
     public partial struct UniTask
     {
+        /// <summary>Fire-and-forget launch of a 2-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
         public static void Void<T1, T2>(Func<T1, T2, UniTaskVoid> asyncAction, T1 arg1, T2 arg2)
             => asyncAction(arg1, arg2).Forget();
 
+        /// <summary>Fire-and-forget launch of a 3-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
         public static void Void<T1, T2, T3>(Func<T1, T2, T3, UniTaskVoid> asyncAction, T1 arg1, T2 arg2, T3 arg3)
             => asyncAction(arg1, arg2, arg3).Forget();
 
+        /// <summary>Fire-and-forget launch of a 4-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
         public static void Void<T1, T2, T3, T4>(Func<T1, T2, T3, T4, UniTaskVoid> asyncAction, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
             => asyncAction(arg1, arg2, arg3, arg4).Forget();
 
+        /// <summary>Fire-and-forget launch of a 5-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
         public static void Void<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, UniTaskVoid> asyncAction, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
             => asyncAction(arg1, arg2, arg3, arg4, arg5).Forget();
 
+        /// <summary>
+        /// State-passing <c>WaitUntil</c>: the predicate receives <paramref name="state"/> as an argument
+        /// instead of capturing it, so polling stays allocation-free when the predicate is capture-free.
+        /// Unlike <c>WaitUntilValueChanged</c>, the state is held strongly; cancel via <paramref name="cancellationToken"/>.
+        /// </summary>
         public static UniTask WaitUntil<TState>(Func<TState, bool> predicate,
                                                 TState state,
                                                 PlayerLoopTiming timing = PlayerLoopTiming.Update,

@@ -12,7 +12,7 @@ Every synchronous operator on `Optional<T>` and `Result<T>` has an async counter
 
 Unity's main thread is single-threaded. `Task<T>` continuations can resume on thread-pool threads, which means touching `UnityEngine` objects from a continuation causes `UnityException`. UniTask continuations resume on the Unity player loop by default, avoiding this entire class of bug. The library targets UniTask throughout for this reason.
 
-Add the UniTask package before using async methods:
+UniTask is a **hard dependency** of the package - the assembly references it directly, so the package does not compile without it. Add it before installing:
 
 ```json
 // Packages/manifest.json
@@ -236,6 +236,32 @@ public async UniTask<Result<SaveData>> LoadAndValidateAsync(string path)
         .ThenAsync(data => ValidateOnServerAsync(data));
 }
 ```
+
+---
+
+## UniTask additions (`UniTask.Void`, `UniTask.WaitUntil`)
+
+The package also extends the `UniTask` type itself (compiled into the UniTask assembly via an `.asmref`) with state-passing counterparts of two built-ins, so hot-path launches and polling stay closure-free:
+
+```csharp
+// Fire-and-forget with explicit arguments instead of a capturing closure (2-5 arguments)
+static void Void<T1, T2>(Func<T1, T2, UniTaskVoid> asyncAction, T1 arg1, T2 arg2)
+
+// WaitUntil whose predicate receives the state as an argument
+static UniTask WaitUntil<TState>(Func<TState, bool> predicate, TState state,
+    PlayerLoopTiming timing = PlayerLoopTiming.Update,
+    CancellationToken cancellationToken = default)
+```
+
+```csharp
+// No closure: `this` and `damage` travel as arguments
+UniTask.Void(static (self, dmg) => self.FlashAsync(dmg), this, damage);
+
+// No closure: poll a field via state
+await UniTask.WaitUntil(static hp => hp.Current <= 0, healthComponent, cancellationToken: token);
+```
+
+Unlike UniTask's `WaitUntilValueChanged`, the state in `WaitUntil` is held strongly (no `WeakReference`); tie the wait to the object's lifetime with a `CancellationToken` (e.g. `this.GetCancellationTokenOnDestroy()`).
 
 ---
 

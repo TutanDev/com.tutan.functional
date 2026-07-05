@@ -10,7 +10,7 @@ This document covers the utility belt that underpins the library: the `F` static
 
 ## F module
 
-Add `using static Tutan.Functional.F;` to bring all helpers into scope. The package ships a `global using` for assemblies that reference it, so this is usually automatic.
+Add `using static Tutan.Functional.F;` to bring all helpers into scope (or add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly - C# global usings do not flow across assembly boundaries, so the package cannot do this for you).
 
 ---
 
@@ -177,7 +177,7 @@ Optional<Enemy> first = enemies.Head();
 Optional<T> FindFirst<T>(this IEnumerable<T> source, Func<T, bool> predicate)
 ```
 
-Returns the first matching element or `None`.
+Returns the first matching element or `None` (also `None` for a null source). Never throws.
 
 ```csharp
 Optional<Enemy> boss = enemies.FindFirst(e => e.IsBoss);
@@ -207,6 +207,7 @@ R Match<T, R>(this IEnumerable<T> list,
 ```
 
 Deconstructs the list into head and tail. Returns `Empty()` for an empty sequence.
+Note: the source is enumerated twice (head, then tail) - pass a repeatable sequence, not a one-shot iterator.
 
 ```csharp
 string summary = enemies.Match(

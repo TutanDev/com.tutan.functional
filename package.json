@@ -1,13 +1,20 @@
 {
   "name": "com.tutan.functional",
   "displayName": "Functional",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "unity": "6000.1",
   "unityRelease": "8f1",
-  "description": "A lightweight functional programming library for Unity providing Optional<T>, Result<T>, and composable extension methods.",
-  "dependencies": {
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
-  },
+  "description": "A lightweight functional programming library for Unity providing Optional<T>, Result<T>, and composable extension methods. Requires UniTask (com.cysharp.unitask), installed separately.",
+  "keywords": [
+    "functional",
+    "optional",
+    "result",
+    "railway-oriented",
+    "error-handling",
+    "unitask"
+  ],
+  "documentationUrl": "https://github.com/TutanDev/com.tutan.functional",
+  "changelogUrl": "https://github.com/TutanDev/com.tutan.functional/blob/main/CHANGELOG.md",
   "author": {
     "name": "TutanDev",
     "url": "https://github.com/TutanDev/com.tutan.functional",

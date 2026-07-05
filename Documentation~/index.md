@@ -20,8 +20,8 @@ fails — explicitly, as a value, composable in a pipeline.
 | 💥 **Explicit failure** | `Result<T>` replaces exceptions — failures become values you chain and transform |
 | 🔗 **Composable pipelines** | `Then`, `Map`, `Bind`, `Match` — no more nested conditionals |
 | ✅ **Accumulating validation** | `Validator<T>` collects every failure before reporting, not just the first |
-| ⚡ **Async parity** | Every operator has a `UniTask` counterpart — async pipelines look identical to sync |
-| 🛡️ **Unity-aware** | Handles Unity's fake-null problem; includes `GetComponent`, `Resources` helpers |
+| ⚡ **Async parity** | The core operators (`Map`, `Bind`, `Then`, `Match`, `Try`) have `UniTask` counterparts — async pipelines look identical to sync |
+| 🛡️ **Unity-aware** | Handles Unity's fake-null problem; `LookupComponent`, `LookupParent`, and `Alive()` lifetime re-checks |
 
 ---
 

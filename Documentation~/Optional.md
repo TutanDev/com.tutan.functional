@@ -1,4 +1,4 @@
-[Home](index) ·~~~~ [Why this library](Functional) · **Optional** · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index) · [Why this library](Functional) · **Optional** · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
 
 ---
 
