@@ -2,10 +2,10 @@
     "name": "Tutan.Functional.Editor.Tests",
     "rootNamespace": "Tutan.Functional.Editor.Tests",
     "references": [
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "UniTask",
-        "Tutan.Functional"
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:24c3fc5ca3568e8459fa78711f324a01"
     ],
     "includePlatforms": [
         "Editor"
