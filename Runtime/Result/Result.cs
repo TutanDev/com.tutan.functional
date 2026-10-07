@@ -31,7 +31,7 @@ namespace Tutan.Functional
     /// The outcome of an operation: either a success value <c>T</c> or an <see cref="Error"/>.
     /// Replaces exception-based error handling with composable, type-safe results.
     /// Construct via <see cref="F.Success{T}(T)"/>, <see cref="F.Fail{T}(Error)"/>, or the implicit conversions.
-    /// Note: <c>default(Result&lt;T&gt;)</c> is an error carrying an empty-message <see cref="Error"/>.
+    /// Note: <c>default(Result&lt;T&gt;)</c> is an error carrying <c>default(Error)</c> (<c>Message</c> is <c>null</c>; <c>ToString()</c> is empty).
     /// </summary>
     public readonly record struct Result<T>
     {
@@ -97,9 +97,10 @@ namespace Tutan.Functional
         /// <summary>Lifts an <see cref="Error"/> into a failed result.</summary>
         public static implicit operator Result<T>(Error error) => new(error);
 
-        // Enables `if (result)` / `result && other` short-circuiting on the success branch.
+        // operator true/false make Result usable as a condition (if / while / ?:). They do not enable
+        // && / ||, which would additionally require operator & / |.
 
-        /// <summary>Truthy on success: enables <c>if (result)</c> and <c>&amp;&amp;</c> short-circuiting on the success branch.</summary>
+        /// <summary>Truthy on success: enables <c>if (result)</c>, <c>while (result)</c> and <c>result ? a : b</c>. Does not enable <c>&amp;&amp;</c>/<c>||</c>.</summary>
         public static bool operator true(Result<T> result) => result._isSuccess;
 
         /// <summary>Falsy on error: the counterpart required for <c>operator true</c>.</summary>

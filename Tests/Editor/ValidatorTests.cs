@@ -152,6 +152,17 @@ namespace Tutan.Functional.Tests
         }
 
         [Test]
+        public void HarvestErrors_NestedValidatorError_KeepsOuterMessage()
+        {
+            Validator<int> nested = n => Error("Range invalid", Error("below zero"));
+            var validator = HarvestErrors(nested, MustBeEven);
+
+            var errors = validator(-3).ErrorUnsafe().AsEnumerable().Select(e => e.Message).ToList();
+
+            Assert.That(errors, Is.EqualTo(new[] { "Range invalid", "Must be even" }));
+        }
+
+        [Test]
         public void HarvestErrors_MultipleFail_ErrorMessageContainsAll()
         {
             var validator = HarvestErrors(MustBePositive, MustBeEven, MustBeLessThan100);

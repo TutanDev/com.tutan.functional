@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · [Result](Result) · [Error](Error) · [Validation](Validation) · **Utilities** · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · [Result](Result.md) · [Error](Error.md) · [Validation](Validation.md) · **Utilities** · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -10,7 +10,7 @@ This document covers the utility belt that underpins the library: the `F` static
 
 ## F module
 
-Add `using static Tutan.Functional.F;` to bring all helpers into scope (or add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly - C# global usings do not flow across assembly boundaries, so the package cannot do this for you).
+Add `using static Tutan.Functional.F;` to bring all helpers into scope (or add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly - C# global usings do not flow across assembly boundaries, so the package cannot do this for you; it also needs `-langversion:10` in that assembly's `csc.rsp`).
 
 ---
 
@@ -40,9 +40,9 @@ Result<int> lives = Try(() => int.Parse(rawInput));
 // File I/O
 Result<string> json = Try(() => System.IO.File.ReadAllText(savePath));
 
-// Chained — parse JSON then validate
-Result<PlayerConfig> config = Try(() => JsonUtility.FromJson<PlayerConfig>(json))
-    .Filter(c => c != null)
+// Chained — read, parse, then validate (null JSON results already become Error("Value is null"))
+Result<PlayerConfig> config = json
+    .Then(j => Try(() => JsonUtility.FromJson<PlayerConfig>(j)))
     .Then(c => Validate(c));
 ```
 
@@ -69,12 +69,14 @@ using UnityEngine;
 using Tutan.Functional;
 using static Tutan.Functional.F;
 
+Func<PlayerConfig, PlayerConfig> logConfig = Tee<PlayerConfig>(cfg => Debug.Log($"Parsed config for {cfg.DisplayName}"));
+
 Result<PlayerConfig> result = Try(() => JsonUtility.FromJson<PlayerConfig>(json))
-    .Then(Tee<PlayerConfig>(cfg => Debug.Log($"Parsed config for {cfg.DisplayName}")))
+    .Then(logConfig)                  // a reusable pass-through step
     .Then(cfg => Validate(cfg));
 ```
 
-`Tee` is also how `Then(Action<T>)` is implemented on `Optional<T>` and `Result<T>` — it turns a side-effect into a pass-through mapping step.
+On `Optional<T>`/`Result<T>` you usually don't need `Tee`: `Then(Action<T>)` runs the action and returns the original instance unchanged, with no wrapper closure and no re-wrap. `Tee` is for places that need a `Func<T, T>`, e.g. a reusable step or `Pipe`. Going through `Then(Tee(...))` re-wraps via `Map`, which re-runs the null/fake-null check.
 
 ---
 
@@ -127,8 +129,8 @@ Enemy strong = createGoblin(50);
 **Example — applicative style with `Optional<T>.Apply`**
 
 ```csharp
-Optional<Func<string, int, Enemy>> optFactory = Some(createEnemy).Map(F.Curry);
-Optional<Enemy> enemy = optFactory.Apply(Some("Orc")).Apply(Some(30));
+Optional<Func<string, int, Enemy>> optFactory = Some(createEnemy);
+Optional<Enemy> enemy = optFactory.Apply(Some("Orc")).Apply(Some(30));   // the 2-arg Apply curries internally
 ```
 
 ---
@@ -140,6 +142,8 @@ Unit Unit()  // returns default(ValueTuple)
 ```
 
 Used as the value type for `Result<Unit>` when an operation succeeds but has no meaningful return value (e.g., `Try(Action)`, `TryAsync(Func<UniTask>)`).
+
+> `Unit` is `System.ValueTuple`. The package's `Unit` alias is a `global using` internal to its own assembly, so in your code write `using Unit = System.ValueTuple;` (or use `ValueTuple` directly).
 
 ---
 
@@ -165,7 +169,7 @@ IEnumerable<int> scores = List(10, 20, 30);
 Optional<T> Head<T>(this IEnumerable<T> list)
 ```
 
-Returns `Some(first)` or `None` if the sequence is empty or null. Never throws.
+Returns `Some(first)` or `None` if the sequence is empty or null. Never throws. The element goes through `Some`, so a null or destroyed first element also yields `None`.
 
 ```csharp
 Optional<Enemy> first = enemies.Head();
@@ -315,11 +319,11 @@ clip.Match(
 
 ## `ActionExtensions`
 
-Internal helpers that convert `Action` / `Action<T>` to `Func` equivalents so they can be used in functional pipelines.
+Public adapters that convert `Action` / `Action<T>` to `Func` equivalents returning `Unit`, so side-effects can be used where a function is expected.
 
 ```csharp
 Func<Unit>    ToFunc(this Action action)
 Func<T, Unit> ToFunc<T>(this Action<T> action)
 ```
 
-Used internally by `ForEach`, `Then(Action<T>)`, and `Tee`. Rarely called directly.
+Used internally by `IEnumerable.ForEach`. Each call allocates a wrapper delegate, so keep it out of per-frame code.

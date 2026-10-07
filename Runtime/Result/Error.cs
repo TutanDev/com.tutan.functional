@@ -36,6 +36,10 @@ namespace Tutan.Functional
         private readonly string _message;
         private readonly int _code;
         private readonly Error[] _inner;
+        // Distinguishes a composite (siblings, from HarvestErrors) from a nested error (one cause):
+        // both store inner errors, but only a composite flattens into them in AsEnumerable().
+        // Packs into the existing padding, so the struct stays 24 bytes on 64-bit.
+        private readonly bool _isComposite;
 
         /// <summary>The human-readable description of this error.</summary>
         public string Message => _message;
@@ -55,6 +59,7 @@ namespace Tutan.Functional
             _message = message;
             _code = 0;
             _inner = null;
+            _isComposite = false;
         }
 
         /// <summary>Creates an error with a machine-readable code.</summary>
@@ -63,6 +68,7 @@ namespace Tutan.Functional
             _message = message;
             _code = code;
             _inner = null;
+            _isComposite = false;
         }
 
         /// <summary>Creates a nested error: a high-level message wrapping a lower-level cause.</summary>
@@ -71,6 +77,7 @@ namespace Tutan.Functional
             _message = message;
             _code = 0;
             _inner = new[] { inner };
+            _isComposite = false;
         }
 
         /// <summary>Creates a nested error with a machine-readable code.</summary>
@@ -79,6 +86,7 @@ namespace Tutan.Functional
             _message = message;
             _code = code;
             _inner = new[] { inner };
+            _isComposite = false;
         }
 
         /// <summary>Creates a composite error: joins all messages with <c>"; "</c> and stores every error as an inner error. This is the shape produced by <c>HarvestErrors</c>.</summary>
@@ -88,21 +96,26 @@ namespace Tutan.Functional
             _message = string.Join("; ", arr.Select(e => e.Message));
             _code = 0;
             _inner = arr;
+            _isComposite = true;
         }
 
         /// <summary>Implicit conversion from a message string to a simple error.</summary>
         public static implicit operator Error(string message) => new(message);
 
-        /// <summary>Flattens for logging or iteration: the inner errors for a composite, otherwise <c>{ this }</c>.</summary>
+        /// <summary>
+        /// Flattens for logging or iteration: the inner errors for a composite (one level), otherwise
+        /// <c>{ this }</c>. A nested error yields itself, so its high-level message is not lost.
+        /// </summary>
         public IEnumerable<Error> AsEnumerable()
-            => HasInner ? _inner : new[] { this };
+            => _isComposite && HasInner ? _inner : new[] { this };
 
         /// <summary>Returns <see cref="Message"/> (or <see cref="string.Empty"/> for a default <see cref="Error"/>).</summary>
         public override string ToString() => _message ?? string.Empty;
 
-        /// <summary>Deep equality: compares <see cref="Message"/>, <see cref="Code"/>, and all inner errors.</summary>
+        /// <summary>Deep equality: compares <see cref="Message"/>, <see cref="Code"/>, the composite/nested shape, and all inner errors.</summary>
         public bool Equals(Error other)
-            => _message == other._message && _code == other._code && ErrorArraysEqual(_inner, other._inner);
+            => _message == other._message && _code == other._code && _isComposite == other._isComposite
+               && ErrorArraysEqual(_inner, other._inner);
 
         public override bool Equals(object obj) => obj is Error other && Equals(other);
 

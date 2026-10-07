@@ -18,18 +18,19 @@ namespace Tutan.Functional
         /// <summary>Converts to an <see cref="Optional{T}"/>, discarding the error: success becomes <c>Some</c>, error becomes <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<T> ToOptional<T>(this Result<T> result)
-            => result.Match(
-                (e) => default,
-                (t) => Some(t));
+            => result.IsSuccess ? Some(result._value) : default;
 
 
         // ── Monad ───────────────────────────────────────────────
+        // The operators branch on IsSuccess directly instead of delegating to Match: routing through
+        // Match would need a lambda that captures the caller's delegate, i.e. a closure allocation
+        // on every call even when the caller's own lambda is capture-free.
 
         /// <summary>Map: applies <paramref name="f"/> to the value on success; propagates the error.</summary>
+        /// <remarks>The mapped value goes through <see cref="F.Success{T}(T)"/>, so a null (or destroyed Unity object) return becomes <c>Error("Value is null")</c>.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<R> Map<T, R>(this Result<T> result, Func<T, R> f)
-            => result.Match(
-                onSuccess: s => Success(f(s)),
-                onError: e => e);
+            => result.IsSuccess ? Success(f(result._value)) : new Result<R>(result._error);
 
         /// <summary>Maps a two-argument function, currying it so the result is a lifted function awaiting the second argument.</summary>
         public static Result<Func<T2, R>> Map<T1, T2, R>(this Result<T1> @this, Func<T1, T2, R> func)
@@ -41,13 +42,16 @@ namespace Tutan.Functional
 
         /// <summary>Side-effect on success, collapsing to <c>Result&lt;Unit&gt;</c>: runs <paramref name="action"/> with the value and keeps only the outcome.</summary>
         public static Result<Unit> ForEach<T>(this Result<T> result, Action<T> action)
-            => Map(result, action.ToFunc());
+        {
+            if (result.IsError) return new Result<Unit>(result._error);
+            action(result._value);
+            return Success();
+        }
 
         /// <summary>Bind (flat-map): chains to a function that itself returns a <see cref="Result{T}"/>; propagates the error.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<R> Bind<T, R>(this Result<T> result, Func<T, Result<R>> f)
-            => result.Match(
-                e => e,
-                s => f(s));
+            => result.IsSuccess ? f(result._value) : new Result<R>(result._error);
 
         /// <summary>Flat-maps into a sequence: empty on error, otherwise the elements produced from the value.</summary>
         public static IEnumerable<R> Bind<T, R>(this Result<T> @this, Func<T, IEnumerable<R>> func)
@@ -77,11 +81,11 @@ namespace Tutan.Functional
         /// <summary>LINQ support: enables multiple <c>from</c> clauses.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<RR> SelectMany<T, R, RR>(this Result<T> result, Func<T, Result<R>> bind, Func<T, R, RR> project)
-           => result.Match(
-               (e) => e,
-               (t) => bind(t).Match(
-                   (e) => e,
-                   (r) => Success(project(t, r))));
+        {
+            if (result.IsError) return new Result<RR>(result._error);
+            var inner = bind(result._value);
+            return inner.IsSuccess ? Success(project(result._value, inner._value)) : new Result<RR>(inner._error);
+        }
 
 
         // ── Applicative ─────────────────────────────────────────
@@ -89,11 +93,10 @@ namespace Tutan.Functional
         /// <summary>Applies a lifted function to a lifted value: both must be successes, otherwise the first error wins.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<R> Apply<T, R>(this Result<Func<T, R>> @this, Result<T> arg)
-            => @this.Match(
-                (errF) => errF,
-                (f) => arg.Match(
-                    onSuccess: (t) => Success(f(t)),
-                    onError: (err) => err));
+        {
+            if (@this.IsError) return new Result<R>(@this._error);
+            return arg.IsSuccess ? Success(@this._value(arg._value)) : new Result<R>(arg._error);
+        }
 
         /// <summary>Partially applies a lifted 2-argument function to its first argument.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

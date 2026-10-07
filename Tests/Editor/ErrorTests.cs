@@ -100,6 +100,28 @@ namespace Tutan.Functional.Tests
         }
 
         [Test]
+        public void AsEnumerable_NestedError_ReturnsSelf()
+        {
+            var nested = new Error("Config invalid", new Error("missing field"));
+
+            var result = nested.AsEnumerable().ToList();
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Config invalid", result[0].Message);
+        }
+
+        [Test]
+        public void Equals_CompositeAndNestedWithSameShape_AreNotEqual()
+        {
+            var inner = new Error("x");
+            var composite = new Error(new[] { inner });
+            var nested = new Error("x", inner);
+
+            Assert.AreEqual("x", composite.Message);
+            Assert.AreNotEqual(composite, nested);
+        }
+
+        [Test]
         public void ToString_SingleError_ReturnsMessage()
         {
             var error = new Error("single message");
