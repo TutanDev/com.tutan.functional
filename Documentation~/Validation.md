@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · [Result](Result) · [Error](Error) · **Validation** · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · [Result](Result.md) · [Error](Error.md) · **Validation** · [Utilities](Utilities.md) · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -108,7 +108,8 @@ var validate = HarvestErrors(nameRequired, levelPositive);
 
 Result<PlayerConfig> result = validate(config);
 // On failure, result.Match(onError: e => ...) receives a composite Error
-// whose AsEnumerable() yields one Error per failing validator.
+// whose AsEnumerable() yields one Error per failing validator
+// (a validator that itself returns a composite contributes each of its parts).
 ```
 
 **Use case:** Config file validation, asset manifest checks, level editor rules — anywhere you want to show the user everything that needs fixing in one pass.
@@ -194,6 +195,6 @@ Validator<PlayerConfig> fullValidation =
 ## Practical guidance
 
 - Prefer `HarvestErrors` at startup or in editor tooling where showing all problems saves iteration time.
-- Prefer `FailFast` in hot paths or user-facing interactions where only the first error matters.
+- Prefer `FailFast` in user-facing interactions where only the first error matters; it also skips the remaining validators. Neither combinator is allocation-free (closures, LINQ, and the error list are allocated per call), so keep validation out of per-frame code.
 - Keep each `Validator<T>` focused on a single rule — they compose cleanly and are easy to unit-test individually.
 - Use `e.AsEnumerable()` on the error from `HarvestErrors` to iterate individual rule failures for display.

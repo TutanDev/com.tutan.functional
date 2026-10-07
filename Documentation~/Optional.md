@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · **Optional** · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · **Optional** · [Result](Result.md) · [Error](Error.md) · [Validation](Validation.md) · [Utilities](Utilities.md) · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -140,11 +140,11 @@ public class EnemySpawner : MonoBehaviour
 
 - `someOpt.ToOptional()` — explicit conversion to `Optional<T>`.
 - `SerializableOptional<T>.From(opt)` — explicit conversion from `Optional<T>`.
-- Implicit casts in both directions are also available, so a field typed as `SerializableOptional<T>` can be passed anywhere an `Optional<T>` is expected.
+- Implicit casts in both directions are also available, so a field typed as `SerializableOptional<T>` can be passed to any `Optional<T>` parameter. Implicit conversions don't apply to extension-method receivers: call `.ToOptional()` before chaining `Then`/`Map`/…
 
 ### Custom Inspector drawer
 
-`SerializableOptionalDrawer` (UI Toolkit `PropertyDrawer`, applied to `SerializableOptional<>` and all closed generics via `useForChildren: true`) renders the field as a row containing:
+`SerializableOptionalDrawer` is registered for the open generic `SerializableOptional<>`, so it applies to every closed `SerializableOptional<T>`. It implements UI Toolkit (`CreatePropertyGUI`) with an IMGUI fallback (`OnGUI`) for inspectors still drawn with IMGUI, and renders the field as a row containing:
 
 - a **toggle** bound to `_hasValue`
 - the inner `_value` field, **enabled only when the toggle is on**
@@ -164,8 +164,9 @@ This gives Inspector authors a clear "use this value / leave it unset" UX withou
 Optional<GameObject> cached = Some(enemy);
 Object.Destroy(enemy);
 
-cached.IsSome;            // true — the snapshot is stale
-cached.Alive().IsSome;    // false — Alive() re-checks Unity lifetime
+// After the frame ends (Destroy is deferred):
+Debug.Log(cached.IsSome);          // True  — the snapshot is stale
+Debug.Log(cached.Alive().IsSome);  // False — Alive() re-checks Unity lifetime
 ```
 
 This is deliberate. Unity itself doesn't track lifetimes ambiently either — a destroyed object sitting in a plain C# field is just as stale until you explicitly test it with `if (obj)`. Baking the check into `IsSome`/`Match` would make two equal optionals behave differently over time and tax every non-Unity `T` with a check it doesn't need.

@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · **Result** · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · **Result** · [Error](Error.md) · [Validation](Validation.md) · [Utilities](Utilities.md) · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -77,8 +77,8 @@ public class PlayerBootstrap : MonoBehaviour
 
     public void Initialize()
     {
+        // No null check needed: Try routes the value through Success, which turns null into Error("Value is null").
         Result<PlayerConfig> result = Try(() => JsonUtility.FromJson<PlayerConfig>(configJson))
-            .Filter(cfg => cfg != null)
             .Then(cfg => Validate(cfg));
 
         result.Match(
@@ -107,8 +107,10 @@ public class PlayerBootstrap : MonoBehaviour
 When an operation either succeeds or fails but carries no value, the result type is `Result<Unit>`. Build one with `Success()` / `Fail(...)`, and match it with a parameterless success branch:
 
 ```csharp
+using UnityEngine;
 using Tutan.Functional;
 using static Tutan.Functional.F;
+using Unit = System.ValueTuple;   // the package's Unit alias is internal to its own assembly
 
 public Result<Unit> SaveScore(int score)
 {

@@ -1,4 +1,4 @@
-[Home](index) · **Why this library** · [Optional](Optional) · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · **Why this library** · [Optional](Optional.md) · [Result](Result.md) · [Error](Error.md) · [Validation](Validation.md) · [Utilities](Utilities.md) · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -30,7 +30,7 @@ This library uses **railway-oriented programming**: every step in a data pipelin
 - **Explicit absence** — `Optional<T>` replaces `null` with a type that forces you to handle the missing case.
 - **Explicit failure** — `Result<T>` replaces exceptions with a value that carries either a result or an `Error`.
 - **Composable pipelines** — `Then`, `Map`, `Bind`, and `Match` let you chain steps without nested conditionals.
-- **Async parity** — every sync operator has a `UniTask` counterpart so async pipelines look identical to sync ones.
+- **Async parity** — the core operators (`Map`, `Bind`, `Then`, `Match`, `Try`) have `UniTask` counterparts (when UniTask is installed), so async pipelines look like sync ones.
 
 ---
 
@@ -96,7 +96,7 @@ Optional<Vector3> pos = maybeTarget.Map(t => t.position);
          Steer(target.position);
      ```
 
-- Method-group arguments (`.Map(Transform.GetPosition)`) also allocate a delegate per call under C# 10 — prefer an explicit capture-free lambda in hot paths.
+- Method-group arguments (`.Map(GetPosition)` with `static Vector3 GetPosition(Transform t) => t.position;`) also allocate a delegate per call under C# 10 — prefer an explicit capture-free lambda in hot paths.
 - `Try` allocates when an exception is actually thrown (`ex.ToString()`); that's the exceptional path paying, which is the right trade.
 
 In short: this is an **allocation-conscious** library, not a zero-allocation one. The data types cost nothing; the fluent style costs what closures always cost in C#. Spend that cost where frames don't.
@@ -105,19 +105,14 @@ In short: this is an **allocation-conscious** library, not a zero-allocation one
 
 ## Quick Install
 
-**Optional:** install [UniTask](https://github.com/Cysharp/UniTask) to enable the async API (`ThenAsync`, `TryAsync`, …). Without it, everything else still compiles. See [Async](Async) for setup.
+**Optional:** install [UniTask](https://github.com/Cysharp/UniTask) to enable the async API (`ThenAsync`, `TryAsync`, …). Without it, everything else still compiles. See [Async](Async.md) for setup.
 
-Add the package to `Packages/manifest.json`:
+Install the package with one of:
+- **Asset Store:** *Window › Package Manager › My Assets › Tutan Functional › Install*.
+- **Git URL:** add `"com.tutan.functional": "https://github.com/TutanDev/com.tutan.functional.git"` to `Packages/manifest.json`.
+- **Embedded:** copy the package folder into your project's `Packages/` directory (no manifest entry needed).
 
-```json
-{
-  "dependencies": {
-    "com.tutan.functional": "file:../Packages/com.tutan.functional"
-  }
-}
-```
-
-Add an assembly reference to `Tutan.Functional` in your `.asmdef`.
+If your code lives in an assembly with its own `.asmdef`, add a reference to `Tutan.Functional` (`Assembly-CSharp` gets it automatically).
 
 Then add this using at the top of any file:
 
@@ -126,7 +121,7 @@ using Tutan.Functional;
 using static Tutan.Functional.F;   // brings Some, None, Success, Try, etc. into scope
 ```
 
-> C# `global using` directives only apply inside the assembly that declares them, so the package cannot bring `F` into scope for you. To get the helpers everywhere without per-file usings, add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly.
+> C# `global using` directives only apply inside the assembly that declares them, so the package cannot bring `F` into scope for you. To get the helpers everywhere without per-file usings, add `global using static Tutan.Functional.F;` once in a `GlobalUsings.cs` of your own assembly. That needs C# 10 in that assembly: add a `csc.rsp` with `-langversion:10` next to its `.asmdef`. The same applies to `Unit`: the package's `Unit` alias is internal, so declare `using Unit = System.ValueTuple;` (or a global alias) yourself.
 
 ---
 
@@ -134,11 +129,11 @@ using static Tutan.Functional.F;   // brings Some, None, Success, Try, etc. into
 
 | | Guide | What it covers |
 |---|---|---|
-| 📖 | [Why this library](Functional) | The problem, the approach, performance & hot paths, quick install |
-| ❓ | [Optional\<T\>](Optional) | Construction, `Then`, `Or`, `Filter`, `Match`, Unity examples |
-| ⚠️ | [Result\<T\>](Result) | Construction, `Then`, `Filter`, `Match`, pipeline patterns |
-| 🔴 | [Error](Error) | Simple, nested, composite errors; logging; converting exceptions |
-| ✅ | [Validation](Validation) | `Validator<T>`, `FailFast`, `HarvestErrors`, combining validators |
-| 🔧 | [Utilities](Utilities) | `F` module, `IEnumerable` extensions, Unity lookup helpers |
-| ⚡ | [Async](Async) | `ThenAsync`, `TryAsync`, mixing sync/async pipelines |
-| 📋 | [API Reference](API-Reference) | Every public member — signature and one-line description |
+| 📖 | [Why this library](Functional.md) | The problem, the approach, performance & hot paths, quick install |
+| ❓ | [Optional\<T\>](Optional.md) | Construction, `Then`, `Or`, `Filter`, `Match`, Unity examples |
+| ⚠️ | [Result\<T\>](Result.md) | Construction, `Then`, `Filter`, `Match`, pipeline patterns |
+| 🔴 | [Error](Error.md) | Simple, nested, composite errors; logging; converting exceptions |
+| ✅ | [Validation](Validation.md) | `Validator<T>`, `FailFast`, `HarvestErrors`, combining validators |
+| 🔧 | [Utilities](Utilities.md) | `F` module, `IEnumerable` extensions, Unity lookup helpers |
+| ⚡ | [Async](Async.md) | `ThenAsync`, `TryAsync`, mixing sync/async pipelines |
+| 📋 | [API Reference](API-Reference.md) | Every public member — signature and one-line description |

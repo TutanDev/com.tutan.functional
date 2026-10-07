@@ -1,16 +1,18 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · **API Reference**
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · [Result](Result.md) · [Error](Error.md) · [Validation](Validation.md) · [Utilities](Utilities.md) · [Async](Async.md) · **API Reference**
 
 ---
 
 # API Reference
 
-Scannable reference for every public member. Signatures are simplified (type constraints omitted unless essential). See the linked guides for usage examples.
+Scannable reference for the public API. Signatures are simplified (type constraints omitted unless essential). See the linked guides for usage examples.
 
 ---
 
 ## F — static module (`Tutan.Functional.F`)
 
-Bring into scope with `using static Tutan.Functional.F;` (or a `global using static` in your own assembly).
+Bring into scope with `using static Tutan.Functional.F;` (or a `global using static` in your own assembly, which needs C# 10 there).
+
+> `Unit` below is `System.ValueTuple`. The package's `Unit` alias is internal to its assembly; add `using Unit = System.ValueTuple;` in your own files.
 
 ### Core
 
@@ -106,6 +108,9 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 |---|---|
 | `R Match<R>(Func<R> onNone, Func<T,R> onSome)` | Extracts the value by pattern matching |
 | `Unit Match(Action onNone, Action<T> onSome)` | Void pattern match |
+| `string ToString()` | `"Some: {value}"` or `"None"` |
+
+> Record-struct value equality (`==`, `Equals`, `GetHashCode`) compares presence and value. `NoneType` is the empty struct behind `F.None`.
 
 ### Extension methods (`OptionalExtensions`)
 
@@ -126,6 +131,9 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 | `Optional<T> Then<T>(this Optional<T> opt, Action<T> action)` | Side-effect pass-through |
 | `Optional<R> Then<T,R>(this Optional<T> opt, Func<T,Optional<R>> func)` | Bind — flatMap |
 | `Optional<R> Map<T,R>(this Optional<T> opt, Func<T,R> f)` | Alias for `Then(Func<T,R>)` |
+| `Optional<Func<T2,R>> Map<T1,T2,R>(this Optional<T1> opt, Func<T1,T2,R> f)` | Curried map of a 2-argument function |
+| `Optional<Func<T2,T3,R>> Map<T1,T2,T3,R>(this Optional<T1> opt, Func<T1,T2,T3,R> f)` | Map of a 3-argument function, fixing the first argument |
+| `Optional<R> Map<T,R>(this NoneType _, Func<T,R> f)` | Mapping over `None` is `None` |
 | `Optional<R> Bind<T,R>(this Optional<T> opt, Func<T,Optional<R>> f)` | Alias for `Then(Func<T,Optional<R>>)` |
 | `Optional<T> Filter<T>(this Optional<T> opt, Func<T,bool> predicate)` | Returns `None` if predicate fails |
 
@@ -144,7 +152,7 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 | Signature | Description |
 |---|---|
 | `Optional<R> Apply<T,R>(this Optional<Func<T,R>> opt, Optional<T> arg)` | Applies a lifted function to a lifted value |
-| *(2–8 argument overloads)* | Allow multi-argument lifted functions |
+| *(overloads for 2–9-argument lifted functions)* | Partially apply the first argument (`Apply<T1…T9,R>`) |
 
 #### LINQ query syntax
 
@@ -154,7 +162,7 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 | `Optional<T> Where<T>(this Optional<T> opt, Func<T,bool> predicate)` | Enables `where` clause |
 | `Optional<RR> SelectMany<T,R,RR>(...)` | Enables multiple `from` clauses |
 
-#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional#performance--hot-paths))
+#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional.md#performance--hot-paths))
 
 | Signature | Description |
 |---|---|
@@ -217,7 +225,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 ### Editor — `SerializableOptionalDrawer`
 
-`CustomPropertyDrawer` for `SerializableOptional<>` (applied to all closed generics via `useForChildren: true`). UI Toolkit-based: renders a `Toggle` bound to `_hasValue` next to a `PropertyField` for `_value`. The value field is enabled only while the toggle is on.
+`CustomPropertyDrawer` registered for the open generic `SerializableOptional<>`, so it applies to every closed `SerializableOptional<T>`. Renders a toggle bound to `_hasValue` next to the `_value` field, which is enabled only while the toggle is on. It implements UI Toolkit (`CreatePropertyGUI`) plus an IMGUI fallback (`OnGUI`, `GetPropertyHeight`) for inspectors drawn with IMGUI.
 
 ---
 
@@ -230,7 +238,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `(implicit) Result<T>(T value)` | Via `Success(value)` or implicit cast from `T` |
 | `(implicit) Result<T>(Error error)` | Via implicit cast from `Error` |
 
-> `default(Result<T>)` is an **error** carrying an empty-message `Error` - a zeroed struct never masquerades as success.
+> `default(Result<T>)` is an **error** carrying `default(Error)` (`Message == null`, `ToString() == ""`), so a zeroed struct never masquerades as success.
 
 ### Properties
 
@@ -243,7 +251,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 | Signature | Description |
 |---|---|
-| `operator true` / `operator false` | Truthy on success — enables `if (result)` and `&&` / `\|\|` short-circuiting on the success branch |
+| `operator true` / `operator false` | Truthy on success — enables `if (result)`, `while (result)` and `result ? a : b`. `&&` / `\|\|` are **not** supported (no `operator &` / `\|`) |
 
 ### Core methods
 
@@ -251,6 +259,9 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 |---|---|
 | `R Match<R>(Func<Error,R> onError, Func<T,R> onSuccess)` | Pattern match — extract value or handle error |
 | `Unit Match(Action<Error> onError, Action<T> onSuccess)` | Void pattern match |
+| `string ToString()` | `"Success: {value}"` or `"Error: {message}"` |
+
+> Record-struct value equality (`==`, `Equals`, `GetHashCode`) compares outcome, value and error.
 
 ### Extension methods (`ResultExtensions`)
 
@@ -284,6 +295,8 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `Result<T> Then<T>(this Result<T> result, Action<T> action)` | Side-effect pass-through |
 | `Result<R> Then<T,R>(this Result<T> result, Func<T,Result<R>> func)` | Bind — flatMap |
 | `Result<R> Map<T,R>(this Result<T> result, Func<T,R> f)` | Alias for `Then(Func<T,R>)` |
+| `Result<Func<T2,R>> Map<T1,T2,R>(this Result<T1> result, Func<T1,T2,R> f)` | Curried map of a 2-argument function |
+| `Result<Func<T2,T3,R>> Map<T1,T2,T3,R>(this Result<T1> result, Func<T1,T2,T3,R> f)` | Map of a 3-argument function, fixing the first argument |
 | `Result<R> Bind<T,R>(this Result<T> result, Func<T,Result<R>> f)` | Alias for `Then(Func<T,Result<R>>)` |
 | `Result<Unit> ForEach<T>(this Result<T> result, Action<T> action)` | Side-effect, returns `Result<Unit>` |
 | `Result<T> Filter<T>(this Result<T> result, Func<T,bool> predicate)` | Converts failing predicate to `Error("Predicate not satisfied")` |
@@ -301,7 +314,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | Signature | Description |
 |---|---|
 | `Result<R> Apply<T,R>(this Result<Func<T,R>> @this, Result<T> arg)` | Applies a lifted function to a lifted value |
-| *(2–8 argument overloads)* | Allow multi-argument lifted functions |
+| *(overloads for 2–9-argument lifted functions)* | Partially apply the first argument (`Apply<T1…T9,R>`) |
 
 #### LINQ query syntax
 
@@ -310,7 +323,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `Result<R> Select<T,R>(this Result<T> result, Func<T,R> f)` | Enables `from x in result select ...` |
 | `Result<RR> SelectMany<T,R,RR>(...)` | Enables multiple `from` clauses |
 
-#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional#performance--hot-paths))
+#### State-passing (avoids closure capture; see [Performance & Hot Paths](Functional.md#performance--hot-paths))
 
 | Signature | Description |
 |---|---|
@@ -370,9 +383,9 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 | Signature | Description |
 |---|---|
-| `IEnumerable<Error> AsEnumerable()` | Leaf errors: `{ this }` for simple/nested; inner errors for composite |
+| `IEnumerable<Error> AsEnumerable()` | `{ this }` for simple/nested; the direct inner errors (one level) for composite |
 | `override string ToString()` | Returns `Message` (or `string.Empty` for default) |
-| `bool Equals(Error other)` | Deep equality — compares `Message`, `Code`, and all inner errors |
+| `bool Equals(Error other)` / `==` / `!=` | Deep equality — compares `Message`, `Code`, composite/nested shape, and all inner errors |
 
 ---
 
@@ -417,6 +430,7 @@ A function that validates a value and returns `Success(t)` or an `Error`.
 | `IEnumerable<T> DropWhile<T>(this IEnumerable<T> source, Func<T,bool> pred)` | Skips leading elements matching predicate |
 | `Func<T, IEnumerable<T>> Return<T>()` | Wraps a value in a singleton sequence |
 | `IEnumerable<R> Map<T,R>(this IEnumerable<T> list, Func<T,R> func)` | Alias for `Select` |
+| `IEnumerable<Func<T2,R>> Map<T1,T2,R>(…, Func<T1,T2,R> func)` / `Map<T1,T2,T3,R>` | Curried maps of 2-/3-argument functions |
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,IEnumerable<R>> func)` | Alias for `SelectMany` |
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,Optional<R>> func)` | Flat-map filtering `None` |
 | `IEnumerable<Unit> ForEach<T>(this IEnumerable<T> ts, Action<T> action)` | Side-effect over sequence (lazy) |

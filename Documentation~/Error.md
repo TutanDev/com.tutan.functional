@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · [Result](Result) · **Error** · [Validation](Validation) · [Utilities](Utilities) · [Async](Async) · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · [Result](Result.md) · **Error** · [Validation](Validation.md) · [Utilities](Utilities.md) · [Async](Async.md) · [API Reference](API-Reference.md)
 
 ---
 
@@ -13,11 +13,15 @@
 ### Simple error — a single message
 
 ```csharp
-Error e = new Error("Save file not found");
+Error e1 = new Error("Save file not found");
 // or via the F module helper:
-Error e = Error("Save file not found");
+Error e2 = Error("Save file not found");
 // or implicitly from string:
+Error e3 = "Save file not found";
+
+// An Error converts implicitly to any Result<T>:
 Result<SaveData> result = Error("Save file not found");
+// Result<SaveData> bad = "Save file not found";  // does not compile: string → Error → Result is two user-defined conversions
 ```
 
 ### Nested error — wraps a cause
@@ -69,6 +73,7 @@ result.IfFail(e => Debug.LogError(e.Message));
 You can also do this manually:
 
 ```csharp
+// needs: using System; using Unit = System.ValueTuple;
 try { /* ... */ }
 catch (Exception ex)
 {
@@ -92,8 +97,8 @@ catch (Exception ex)
 
 Flattens an error into an `IEnumerable<Error>` suitable for logging or iteration:
 
-- For a **simple** or **nested** error, returns `{ this }`.
-- For a **composite** error, returns the inner errors.
+- For a **simple** or **nested** error, returns `{ this }`. A nested error keeps its high-level message; reach the cause through `InnerErrors`.
+- For a **composite** error, returns its inner errors (one level, not recursive).
 
 ```csharp
 Error composite = Error(new[] { Error("A"), Error("B"), Error("C") });

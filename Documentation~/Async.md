@@ -1,4 +1,4 @@
-[Home](index) · [Why this library](Functional) · [Optional](Optional) · [Result](Result) · [Error](Error) · [Validation](Validation) · [Utilities](Utilities) · **Async** · [API Reference](API-Reference)
+[Home](index.md) · [Why this library](Functional.md) · [Optional](Optional.md) · [Result](Result.md) · [Error](Error.md) · [Validation](Validation.md) · [Utilities](Utilities.md) · **Async** · [API Reference](API-Reference.md)
 
 ---
 
@@ -10,7 +10,7 @@ Every synchronous operator on `Optional<T>` and `Result<T>` has an async counter
 
 ## Why UniTask, not `Task<T>`
 
-Unity's main thread is single-threaded. `Task<T>` continuations can resume on thread-pool threads, which means touching `UnityEngine` objects from a continuation causes `UnityException`. UniTask continuations resume on the Unity player loop by default, avoiding this entire class of bug. The library targets UniTask throughout for this reason.
+Unity's main thread is single-threaded. Unity installs a `UnitySynchronizationContext`, so a `Task` awaited on the main thread resumes there. But continuations run on thread-pool threads when the await starts off the main thread or uses `ConfigureAwait(false)`, and touching `UnityEngine` objects there throws `UnityException`. `Task` also allocates per operation. UniTask continuations are struct-based, low-allocation, and resume on the Unity player loop. The library targets UniTask for these reasons.
 
 UniTask is an **optional dependency**. The core library (`Optional<T>`, `Result<T>`, `Error`, validation, utilities) compiles without it. The async surface on this page compiles only when the `TUTAN_UNITASK` scripting define is set:
 
@@ -153,7 +153,7 @@ This allows you to mix sync and async steps in a single readable chain:
 Optional<Enemy> result = await Some("Prefabs/Boss")
     .ThenAsync(LoadPrefabAsync)          // async: UniTask<Optional<GameObject>>
     .Then(go => go.GetComponent<Enemy>()) // sync:  UniTask<Optional<Enemy>>
-    .Then(Tee<Enemy>(e => Debug.Log($"Spawned: {e.name}")));
+    .Then(e => Debug.Log($"Spawned: {e.name}"));      // side-effect: passes the optional through
 ```
 
 ---
@@ -191,7 +191,7 @@ UniTask<R> MatchAsync<T, R>(this UniTask<Optional<T>> optTask,
     Func<T, UniTask<R>> onSome)
 ```
 
-The same three-form pattern applies to `Result<T>` (with `onError` instead of `onNone`).
+The same three-form pattern applies to `Result<T>`, with `onError: Func<Error, …>` / `onSuccess` instead of `onNone` / `onSome`.
 
 ---
 
@@ -234,6 +234,7 @@ public async UniTask<Result<LeaderboardEntry>> FetchTopScoreAsync(string playerI
 ### Async validation
 
 ```csharp
+// needs: using System.IO; using Cysharp.Threading.Tasks; using UnityEngine;
 public async UniTask<Result<SaveData>> LoadAndValidateAsync(string path)
 {
     return await TryAsync(async () => await File.ReadAllTextAsync(path))
@@ -259,6 +260,7 @@ static UniTask WaitUntil<TState>(Func<TState, bool> predicate, TState state,
 ```
 
 ```csharp
+// needs: using System.Threading; using Cysharp.Threading.Tasks;
 // No closure: `this` and `damage` travel as arguments
 UniTaskF.Void(static (self, dmg) => self.FlashAsync(dmg), this, damage);
 
