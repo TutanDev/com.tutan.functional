@@ -3,8 +3,12 @@ using System.Threading;
 
 namespace Cysharp.Threading.Tasks
 {
-    // Shipped by Tutan.Functional and compiled into the UniTask assembly via UniTaskRef.asmref,
-    // extending the two-argument forms UniTask itself provides.
+    // Shipped by Tutan.Functional and compiled into the UniTask assembly via UniTaskRef.asmref
+    // (a partial type cannot span assemblies). Extends UniTask's own UniTask.Void(Func<UniTaskVoid>)
+    // and UniTask.Void<T>(Func<T, UniTaskVoid>, T) forms to 2-5 state arguments.
+    //
+    // WaitUntilPromiseCustom is adapted from UniTask's internal WaitUntilPromise (MIT, see
+    // Third Party Notices.md); keep it in sync with that implementation when upgrading UniTask.
     public partial struct UniTask
     {
         /// <summary>Fire-and-forget launch of a 2-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
@@ -140,6 +144,9 @@ namespace Cysharp.Threading.Tasks
                 TaskTracker.RemoveTracking(this);
                 core.Reset();
                 predicate = default;
+                // Clear the state too: a pooled promise must not keep the caller's object graph
+                // reachable after completion (the pool is static and lives for the domain).
+                state = default;
                 cancellationToken = default;
                 return pool.TryPush(this);
             }

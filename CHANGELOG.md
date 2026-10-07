@@ -21,6 +21,11 @@ First Unity Asset Store release.
 
 ### Fixed
 - `EnumerableExt.FindFirst` now returns `None` for a null source instead of throwing, matching `Head`.
+- **Per-call closure allocations in the core operators.** `Map`, `Bind`, `Where`, `SelectMany`, `Apply`, `Or`, `OrElse`, `Filter`, `ToResult`, `ToOptional`, `ValueUnsafe`/`ErrorUnsafe` and `Result.ForEach` were implemented by routing through `Match` with lambdas that captured the caller's delegate, so every call allocated a closure and a delegate even when the caller's own lambda was capture-free. That contradicted the documented hot-path guidance. The operators now branch directly, and `AllocationTests` guards the contract.
+- `Then(Action<T>)` (the side-effect pass-through) on `Optional<T>`/`Result<T>` now returns the original instance. It used to rebuild it through `Map(F.Tee(action))`, which allocated a closure per call and re-ran the null/fake-null check. As a result, an object destroyed inside the action with `DestroyImmediate` turned the pass-through into `None`/`Error`.
+- `UniTask.WaitUntil<TState>`: the pooled promise now clears its `state` field when it returns to the pool. Before, the pool (static, lives for the whole domain) kept the last caller's state object reachable after the wait completed.
+- `SerializableOptionalDrawer` now also implements `OnGUI`/`GetPropertyHeight`. Before, IMGUI-drawn inspectors (custom `Editor`s, third-party inspectors) showed "No GUI implemented". The UI Toolkit path now tracks the serialized `_hasValue`, so undo/redo and multi-object edits refresh the field's enabled state.
+- Docs: `Result<T>`'s `operator true`/`operator false` enable `if (result)`, `while (result)` and `result ? a : b`. They do **not** enable `&&`/`||`, which would also need `operator &`/`|`. The 0.5.0 note and the API reference claimed otherwise.
 
 ## [0.5.0] - 2026-06-16
 

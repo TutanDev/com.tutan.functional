@@ -18,12 +18,13 @@ namespace Tutan.Functional
         /// <summary>Converts to a <see cref="Result{T}"/>: <c>Some</c> becomes <c>Success</c>, <c>None</c> becomes the error produced by <paramref name="onNone"/>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Result<T> ToResult<T>(this Optional<T> opt, Func<Error> onNone)
-            => opt.Match(
-                () => onNone(),
-                (t) => Success(t));
+            => opt.IsSome ? Success(opt._value) : onNone();
 
 
         // ── Monad ───────────────────────────────────────────────
+        // The operators branch on IsSome directly instead of delegating to Match: routing through
+        // Match would need a lambda that captures the caller's delegate, i.e. a closure allocation
+        // on every call even when the caller's own lambda is capture-free.
 
         /// <summary>Mapping over <see cref="F.None"/> is always <c>None</c>; lets pipelines start from the sentinel.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,7 +33,7 @@ namespace Tutan.Functional
         /// <summary>Map: applies <paramref name="f"/> to the value when <c>Some</c>; propagates <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<R> Map<T, R>(this Optional<T> optT, Func<T, R> f)
-            => optT.Match(() => default, (t) => Some(f(t)));
+            => optT.IsSome ? Some(f(optT._value)) : default;
 
         /// <summary>Maps a two-argument function, currying it so the result is an optional function awaiting the second argument.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,9 +48,7 @@ namespace Tutan.Functional
         /// <summary>Bind (flat-map): chains to a function that itself returns an <see cref="Optional{T}"/>; propagates <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<R> Bind<T, R>(this Optional<T> opt, Func<T, Optional<R>> f)
-            => opt.Match(
-                () => default,
-                (t) => f(t));
+            => opt.IsSome ? f(opt._value) : default;
 
         /// <summary>Flat-maps into a sequence: empty when <c>None</c>, otherwise the elements produced from the value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,18 +79,16 @@ namespace Tutan.Functional
         /// <summary>LINQ support: enables <c>where</c> clauses (alias for <c>Filter</c>).</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<T> Where<T>(this Optional<T> optT, Func<T, bool> predicate)
-           => optT.Match(
-               () => default,
-               (t) => predicate(t) ? optT : default);
+           => optT.IsSome && predicate(optT._value) ? optT : default;
 
         /// <summary>LINQ support: enables multiple <c>from</c> clauses.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<RR> SelectMany<T, R, RR>(this Optional<T> opt, Func<T, Optional<R>> bind, Func<T, R, RR> project)
-           => opt.Match(
-               () => default,
-               (t) => bind(t).Match(
-                   () => default,
-                   (r) => Some(project(t, r))));
+        {
+            if (opt.IsNone) return default;
+            var inner = bind(opt._value);
+            return inner.IsSome ? Some(project(opt._value, inner._value)) : default;
+        }
 
 
         // ── Applicative ─────────────────────────────────────────
@@ -99,11 +96,7 @@ namespace Tutan.Functional
         /// <summary>Applies a lifted function to a lifted value: <c>Some(f)</c> applied to <c>Some(x)</c> is <c>Some(f(x))</c>; anything else is <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Optional<R> Apply<T, R>(this Optional<Func<T, R>> opt, Optional<T> arg)
-            => opt.Match(
-            () => default,
-            (func) => arg.Match(
-                () => default,
-                (val) => Some(func(val))));
+            => opt.IsSome && arg.IsSome ? Some(opt._value(arg._value)) : default;
 
         /// <summary>Partially applies a lifted 2-argument function to its first argument.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -23,9 +23,9 @@ namespace Tutan.Functional
         /// <summary>Returns the value, throwing <see cref="InvalidOperationException"/> on <c>None</c>. Use only after guaranteeing <c>Some</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ValueUnsafe<T>(this Optional<T> opt)
-            => opt.Match(
-                () => { throw new InvalidOperationException($"ValueUnsafe<{typeof(T).FullName}> was called on None. Ensure the Option is Some before using ValueUnsafe"); },
-                (t) => t);
+            => opt.IsSome
+                ? opt._value
+                : throw new InvalidOperationException($"ValueUnsafe<{typeof(T).FullName}> was called on None. Ensure the Optional is Some before using ValueUnsafe");
 
         /// <summary>Map: applies <paramref name="func"/> to the value when <c>Some</c>; propagates <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +33,13 @@ namespace Tutan.Functional
 
         /// <summary>Side-effect pass-through: runs <paramref name="action"/> on the value when <c>Some</c>, then returns the optional unchanged.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Optional<T> Then<T>(this Optional<T> opt, Action<T> action) => opt.Map(F.Tee(action));
+        public static Optional<T> Then<T>(this Optional<T> opt, Action<T> action)
+        {
+            // Returns `opt` itself rather than re-wrapping through Some(): no Tee closure, and an
+            // object destroyed inside `action` cannot silently turn the pass-through into None.
+            if (opt.IsSome) action(opt._value);
+            return opt;
+        }
 
         /// <summary>Bind (flat-map): chains to a function that itself returns an <see cref="Optional{T}"/>; propagates <c>None</c>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,11 +47,11 @@ namespace Tutan.Functional
 
         /// <summary>Returns the value when <c>Some</c>, otherwise <paramref name="fallback"/>.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Or<T>(this Optional<T> opt, T fallback) => opt.Match(() => fallback, t => t);
+        public static T Or<T>(this Optional<T> opt, T fallback) => opt.IsSome ? opt._value : fallback;
 
         /// <summary>Returns the value when <c>Some</c>, otherwise the result of <paramref name="fallback"/> (evaluated lazily).</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T OrElse<T>(this Optional<T> opt, Func<T> fallback) => opt.Match(() => fallback(), t => t);
+        public static T OrElse<T>(this Optional<T> opt, Func<T> fallback) => opt.IsSome ? opt._value : fallback();
 
         /// <summary>Returns <c>None</c> when the predicate fails; passes <c>Some</c> through when it holds.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
