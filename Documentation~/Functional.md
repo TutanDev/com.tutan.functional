@@ -105,7 +105,7 @@ In short: this is an **allocation-conscious** library, not a zero-allocation one
 
 ## Quick Install
 
-**Prerequisite:** the package requires [UniTask](https://github.com/Cysharp/UniTask). Install it first (see [Async](Async) for the manifest entry) - without it the package does not compile.
+**Optional:** install [UniTask](https://github.com/Cysharp/UniTask) to enable the async API (`ThenAsync`, `TryAsync`, …). Without it, everything else still compiles. See [Async](Async) for setup.
 
 Add the package to `Packages/manifest.json`:
 

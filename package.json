@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "unity": "6000.1",
   "unityRelease": "8f1",
-  "description": "A lightweight functional programming library for Unity providing Optional<T>, Result<T>, and composable extension methods. Requires UniTask (com.cysharp.unitask), installed separately.",
+  "description": "A lightweight functional programming library for Unity providing Optional<T>, Result<T>, and composable extension methods. Optional UniTask (com.cysharp.unitask) integration enables the async API when installed.",
   "keywords": [
     "functional",
     "optional",

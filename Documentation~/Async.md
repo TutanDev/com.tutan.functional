@@ -12,7 +12,12 @@ Every synchronous operator on `Optional<T>` and `Result<T>` has an async counter
 
 Unity's main thread is single-threaded. `Task<T>` continuations can resume on thread-pool threads, which means touching `UnityEngine` objects from a continuation causes `UnityException`. UniTask continuations resume on the Unity player loop by default, avoiding this entire class of bug. The library targets UniTask throughout for this reason.
 
-UniTask is a **hard dependency** of the package - the assembly references it directly, so the package does not compile without it. Add it before installing:
+UniTask is an **optional dependency**. The core library (`Optional<T>`, `Result<T>`, `Error`, validation, utilities) compiles without it. The async surface on this page compiles only when the `TUTAN_UNITASK` scripting define is set:
+
+- **UniTask installed as a UPM package** (`com.cysharp.unitask`, via Git URL or OpenUPM): the define is set automatically through the assembly definition's *Version Defines*. Nothing to do.
+- **UniTask copied into `Assets/`** (e.g. from the `.unitypackage` release): Version Defines only see UPM packages, so add `TUTAN_UNITASK` yourself in *Project Settings › Player › Scripting Define Symbols*.
+
+Install UniTask as a package:
 
 ```json
 // Packages/manifest.json
@@ -239,9 +244,9 @@ public async UniTask<Result<SaveData>> LoadAndValidateAsync(string path)
 
 ---
 
-## UniTask additions (`UniTask.Void`, `UniTask.WaitUntil`)
+## `UniTaskF` — closure-free `Void` and `WaitUntil`
 
-The package also extends the `UniTask` type itself (compiled into the UniTask assembly via an `.asmref`) with state-passing counterparts of two built-ins, so hot-path launches and polling stay closure-free:
+`UniTaskF` (namespace `Tutan.Functional`) provides state-passing counterparts of two UniTask built-ins, so hot-path launches and polling stay closure-free:
 
 ```csharp
 // Fire-and-forget with explicit arguments instead of a capturing closure (2-5 arguments)
@@ -255,11 +260,13 @@ static UniTask WaitUntil<TState>(Func<TState, bool> predicate, TState state,
 
 ```csharp
 // No closure: `this` and `damage` travel as arguments
-UniTask.Void(static (self, dmg) => self.FlashAsync(dmg), this, damage);
+UniTaskF.Void(static (self, dmg) => self.FlashAsync(dmg), this, damage);
 
 // No closure: poll a field via state
-await UniTask.WaitUntil(static hp => hp.Current <= 0, healthComponent, cancellationToken: token);
+await UniTaskF.WaitUntil(static hp => hp.Current <= 0, healthComponent, cancellationToken: token);
 ```
+
+> Before 1.0.0 these were `UniTask.Void` / `UniTask.WaitUntil`, injected into UniTask's own assembly through an `.asmref`. That couldn't be made conditional, so they moved to `UniTaskF`. Migrate by renaming the receiver.
 
 Unlike UniTask's `WaitUntilValueChanged`, the state in `WaitUntil` is held strongly (no `WeakReference`); tie the wait to the object's lifetime with a `CancellationToken` (e.g. `this.GetCancellationTokenOnDestroy()`).
 

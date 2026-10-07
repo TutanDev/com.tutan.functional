@@ -1,3 +1,6 @@
+#if TUTAN_UNITASK
+// Compiled only when UniTask is installed: TUTAN_UNITASK is set by the asmdef versionDefines
+// for com.cysharp.unitask (or manually, for UniTask copied into Assets/).
 using System;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -202,3 +205,4 @@ namespace Tutan.Functional.Tests
         }
     }
 }
+#endif

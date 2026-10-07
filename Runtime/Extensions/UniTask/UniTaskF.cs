@@ -1,15 +1,22 @@
+#if TUTAN_UNITASK
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 
-namespace Cysharp.Threading.Tasks
+namespace Tutan.Functional
 {
-    // Shipped by Tutan.Functional and compiled into the UniTask assembly via UniTaskRef.asmref
-    // (a partial type cannot span assemblies). Extends UniTask's own UniTask.Void(Func<UniTaskVoid>)
-    // and UniTask.Void<T>(Func<T, UniTaskVoid>, T) forms to 2-5 state arguments.
-    //
-    // WaitUntilPromiseCustom is adapted from UniTask's internal WaitUntilPromise (MIT, see
-    // Third Party Notices.md); keep it in sync with that implementation when upgrading UniTask.
-    public partial struct UniTask
+    /// <summary>
+    /// Closure-free counterparts of two UniTask built-ins: fire-and-forget launch with explicit
+    /// arguments (<c>Void</c>) and state-passing polling (<c>WaitUntil</c>). Only compiled when
+    /// UniTask is installed (<c>TUTAN_UNITASK</c>).
+    /// </summary>
+    /// <remarks>
+    /// <c>WaitUntilPromiseCustom</c> is adapted from UniTask's internal <c>WaitUntilPromise</c>
+    /// (MIT, see <c>Third Party Notices.md</c>); keep it in sync with that implementation when
+    /// upgrading UniTask. It relies only on UniTask's public extension points
+    /// (<c>IUniTaskSource</c>, <c>IPlayerLoopItem</c>, <c>TaskPool</c>, <c>TaskTracker</c>).
+    /// </remarks>
+    public static class UniTaskF
     {
         /// <summary>Fire-and-forget launch of a 2-argument <see cref="UniTaskVoid"/> method: passes the state as arguments instead of capturing it in a closure.</summary>
         public static void Void<T1, T2>(Func<T1, T2, UniTaskVoid> asyncAction, T1 arg1, T2 arg2)
@@ -153,3 +160,4 @@ namespace Cysharp.Threading.Tasks
         }
     }
 }
+#endif

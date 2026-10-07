@@ -27,9 +27,11 @@ Practical rule: write for clarity in system-level code (loading, validation, con
 
 ## Installation
 
-**Prerequisite:** the package requires [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`). Install it first - the package does not compile without it.
+**Optional:** [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`) enables the async API (`MapAsync`, `ThenAsync`, `TryAsync`, `UniTaskF`, …). The rest of the library compiles and works without it.
+- Installed as a UPM package (Git URL / OpenUPM): picked up automatically via the asmdef *Version Defines* (`TUTAN_UNITASK`).
+- Copied into `Assets/`: add `TUTAN_UNITASK` to *Project Settings › Player › Scripting Define Symbols*.
 
-Add both to your project's `Packages/manifest.json`:
+To install via Git URLs, add the entries to your project's `Packages/manifest.json` (drop the UniTask line if you don't need async):
 
 ```json
 {
@@ -68,5 +70,5 @@ string message = parsed
 ## Requirements
 
 - Unity 6000.1+
-- [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`) - hard dependency, installed separately
+- Optional: [UniTask](https://github.com/Cysharp/UniTask) 2.x (`com.cysharp.unitask`), installed separately, for the async API
 - C# 10 (enabled via `csc.rsp`)

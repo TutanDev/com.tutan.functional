@@ -421,12 +421,12 @@ A function that validates a value and returns `Success(t)` or an `Error`.
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,Optional<R>> func)` | Flat-map filtering `None` |
 | `IEnumerable<Unit> ForEach<T>(this IEnumerable<T> ts, Action<T> action)` | Side-effect over sequence (lazy) |
 
-### UniTask additions (compiled into the UniTask assembly via `.asmref`)
+### `UniTaskF` (requires `TUTAN_UNITASK`)
 
 | Signature | Description |
 |---|---|
-| `void UniTask.Void<T1,T2>(Func<T1,T2,UniTaskVoid> asyncAction, T1 arg1, T2 arg2)` | Fire-and-forget launch with explicit arguments instead of a capturing closure (2-5 argument overloads) |
-| `UniTask UniTask.WaitUntil<TState>(Func<TState,bool> predicate, TState state, PlayerLoopTiming timing = Update, CancellationToken ct = default)` | State-passing `WaitUntil`; state is held strongly - cancel via the token |
+| `void UniTaskF.Void<T1,T2>(Func<T1,T2,UniTaskVoid> asyncAction, T1 arg1, T2 arg2)` | Fire-and-forget launch with explicit arguments instead of a capturing closure (2-5 argument overloads) |
+| `UniTask UniTaskF.WaitUntil<TState>(Func<TState,bool> predicate, TState state, PlayerLoopTiming timing = Update, CancellationToken ct = default)` | State-passing `WaitUntil`; state is held strongly - cancel via the token |
 
 ### `LookupExtensions`
 

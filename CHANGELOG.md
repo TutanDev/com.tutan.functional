@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 First Unity Asset Store release.
 
 ### Added
-- XML documentation comments (`<summary>`, and `<param>`/`<remarks>` where they add information) across the entire public API: `Optional<T>`, `Result<T>`, `Error`, the `F` module, all extension classes, the async surface, and the `UniTask.Void`/`UniTask.WaitUntil` additions.
-- Documented the `UniTask.Void` / state-passing `UniTask.WaitUntil` additions (shipped since 0.2.0 but previously absent from the docs) in `Documentation~/Async.md` and the API reference.
+- XML documentation comments (`<summary>`, and `<param>`/`<remarks>` where they add information) across the entire public API: `Optional<T>`, `Result<T>`, `Error`, the `F` module, all extension classes, the async surface, and `UniTaskF`.
+- Documented the state-passing `Void` / `WaitUntil` helpers (shipped since 0.2.0 but previously absent from the docs, now `UniTaskF`) in `Documentation~/Async.md` and the API reference.
 - `Third Party Notices.md` now contains the actual UniTask MIT license text (was an unfilled template).
 - `keywords`, `documentationUrl`, and `changelogUrl` in `package.json`.
 
 ### Changed
-- **UniTask is now a documented manual prerequisite instead of a `package.json` dependency.** UPM does not support Git URLs in a package's `dependencies` block, so the previous declaration could not resolve; README, `Documentation~`, and the store listing now state the requirement explicitly. The compile-time dependency is unchanged.
+- **UniTask is now an optional dependency.** It was a hard compile-time dependency, so importing the package into a project without UniTask produced compile errors. UPM can't declare it either, because it doesn't support Git URLs in a package's `dependencies` block. Now the runtime and test asmdefs define `TUTAN_UNITASK` via *Version Defines* when `com.cysharp.unitask` is installed, and every async file is compiled only under that define. If UniTask was copied into `Assets/` rather than installed as a package, add `TUTAN_UNITASK` to the Scripting Define Symbols manually.
+- **Breaking:** `UniTask.Void(...)` / `UniTask.WaitUntil<TState>(...)` moved to `Tutan.Functional.UniTaskF.Void(...)` / `UniTaskF.WaitUntil(...)`, with the same signatures. They used to be injected into UniTask's own assembly via `UniTaskRef.asmref`, which can't be made conditional (it would point to a missing assembly when UniTask is absent), so the `.asmref` is removed. Migrate by renaming the receiver.
 - Corrected docs that claimed the package ships `global using static Tutan.Functional.F` for consuming assemblies - C# global usings do not cross assembly boundaries; consumers add the using themselves.
 - Documented that `default(Result<T>)` is an error carrying an empty-message `Error`, and that `EnumerableExt.Match` enumerates its source twice.
 
@@ -23,7 +24,7 @@ First Unity Asset Store release.
 - `EnumerableExt.FindFirst` now returns `None` for a null source instead of throwing, matching `Head`.
 - **Per-call closure allocations in the core operators.** `Map`, `Bind`, `Where`, `SelectMany`, `Apply`, `Or`, `OrElse`, `Filter`, `ToResult`, `ToOptional`, `ValueUnsafe`/`ErrorUnsafe` and `Result.ForEach` were implemented by routing through `Match` with lambdas that captured the caller's delegate, so every call allocated a closure and a delegate even when the caller's own lambda was capture-free. That contradicted the documented hot-path guidance. The operators now branch directly, and `AllocationTests` guards the contract.
 - `Then(Action<T>)` (the side-effect pass-through) on `Optional<T>`/`Result<T>` now returns the original instance. It used to rebuild it through `Map(F.Tee(action))`, which allocated a closure per call and re-ran the null/fake-null check. As a result, an object destroyed inside the action with `DestroyImmediate` turned the pass-through into `None`/`Error`.
-- `UniTask.WaitUntil<TState>`: the pooled promise now clears its `state` field when it returns to the pool. Before, the pool (static, lives for the whole domain) kept the last caller's state object reachable after the wait completed.
+- `UniTaskF.WaitUntil<TState>` (formerly `UniTask.WaitUntil<TState>`): the pooled promise now clears its `state` field when it returns to the pool. Before, the pool (static, lives for the whole domain) kept the last caller's state object reachable after the wait completed.
 - `SerializableOptionalDrawer` now also implements `OnGUI`/`GetPropertyHeight`. Before, IMGUI-drawn inspectors (custom `Editor`s, third-party inspectors) showed "No GUI implemented". The UI Toolkit path now tracks the serialized `_hasValue`, so undo/redo and multi-object edits refresh the field's enabled state.
 - Docs: `Result<T>`'s `operator true`/`operator false` enable `if (result)`, `while (result)` and `result ? a : b`. They do **not** enable `&&`/`||`, which would also need `operator &`/`|`. The 0.5.0 note and the API reference claimed otherwise.
 
