@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using static Tutan.Functional.F;
+using static Tutan.Functional.UniTaskF;
 
 namespace Tutan.Functional.Tests
 {

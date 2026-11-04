@@ -1,36 +1,43 @@
 #if TUTAN_UNITASK
-// Compiled only when UniTask is installed: TUTAN_UNITASK is set by the asmdef versionDefines
+// Compiled only when UniTask is installed: TUTAN_UNITASK is set by this assembly's versionDefines
 // for com.cysharp.unitask (or manually, for UniTask copied into Assets/).
 using System;
 using Cysharp.Threading.Tasks;
+using static Tutan.Functional.F;
 
 namespace Tutan.Functional
 {
-    public static partial class ResultExtensions
+    /// <summary>
+    /// The async operators on <see cref="Result{T}"/> and <c>UniTask&lt;Result&lt;T&gt;&gt;</c>. They live in
+    /// the <c>Tutan.Functional.UniTask</c> assembly, so an assembly that references only
+    /// <c>Tutan.Functional</c> never meets a UniTask type when it calls <c>Map</c>, <c>Bind</c> or
+    /// <c>Then</c>, and need not reference UniTask.
+    /// </summary>
+    public static class ResultAsyncExtensions
     {
         // ── MapAsync ─────────────────────────────────────────────────────────
 
         /// <summary>Async map on a sync result: awaits <paramref name="func"/> on success; propagates the error.</summary>
         public static async UniTask<Result<R>> MapAsync<T, R>(this Result<T> result, Func<T, UniTask<R>> func)
         {
-            if (result.IsError) return new Result<R>(result._error);
-            return Success(await func(result._value));
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return Success(await func(value));
         }
 
         /// <summary>Sync map on an async result: awaits the task, then applies <paramref name="func"/> on success.</summary>
         public static async UniTask<Result<R>> Map<T, R>(this UniTask<Result<T>> resultTask, Func<T, R> func)
         {
             var result = await resultTask;
-            if (result.IsError) return new Result<R>(result._error);
-            return Success(func(result._value));
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return Success(func(value));
         }
 
         /// <summary>Async map on an async result: awaits the task, then awaits <paramref name="func"/> on success.</summary>
         public static async UniTask<Result<R>> MapAsync<T, R>(this UniTask<Result<T>> resultTask, Func<T, UniTask<R>> func)
         {
             var result = await resultTask;
-            if (result.IsError) return new Result<R>(result._error);
-            return Success(await func(result._value));
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return Success(await func(value));
         }
 
 
@@ -39,24 +46,24 @@ namespace Tutan.Functional
         /// <summary>Async bind on a sync result: awaits a function that returns a <see cref="Result{T}"/>; propagates the error.</summary>
         public static async UniTask<Result<R>> BindAsync<T, R>(this Result<T> result, Func<T, UniTask<Result<R>>> func)
         {
-            if (result.IsError) return new Result<R>(result._error);
-            return await func(result._value);
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return await func(value);
         }
 
         /// <summary>Sync bind on an async result: awaits the task, then chains to <paramref name="func"/> on success.</summary>
         public static async UniTask<Result<R>> Bind<T, R>(this UniTask<Result<T>> resultTask, Func<T, Result<R>> func)
         {
             var result = await resultTask;
-            if (result.IsError) return new Result<R>(result._error);
-            return func(result._value);
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return func(value);
         }
 
         /// <summary>Async bind on an async result: awaits the task, then awaits <paramref name="func"/> on success.</summary>
         public static async UniTask<Result<R>> BindAsync<T, R>(this UniTask<Result<T>> resultTask, Func<T, UniTask<Result<R>>> func)
         {
             var result = await resultTask;
-            if (result.IsError) return new Result<R>(result._error);
-            return await func(result._value);
+            if (!result.IsSuccess(out var value)) return result.ErrorUnsafe();
+            return await func(value);
         }
 
 
@@ -73,7 +80,7 @@ namespace Tutan.Functional
         /// <summary>Async side-effect pass-through: awaits <paramref name="action"/> on success, then returns the result unchanged.</summary>
         public static async UniTask<Result<T>> ThenAsync<T>(this Result<T> result, Func<T, UniTask> action)
         {
-            if (result.IsSuccess) await action(result._value);
+            if (result.IsSuccess(out var value)) await action(value);
             return result;
         }
 
@@ -92,7 +99,7 @@ namespace Tutan.Functional
         public static async UniTask<Result<T>> Then<T>(this UniTask<Result<T>> resultTask, Action<T> action)
         {
             var result = await resultTask;
-            if (result.IsSuccess) action(result._value);
+            if (result.IsSuccess(out var value)) action(value);
             return result;
         }
 
@@ -108,7 +115,7 @@ namespace Tutan.Functional
         public static async UniTask<Result<T>> ThenAsync<T>(this UniTask<Result<T>> resultTask, Func<T, UniTask> action)
         {
             var result = await resultTask;
-            if (result.IsSuccess) await action(result._value);
+            if (result.IsSuccess(out var value)) await action(value);
             return result;
         }
 
@@ -117,28 +124,28 @@ namespace Tutan.Functional
 
         /// <summary>Async pattern match on a sync result: awaits the branch selected by success/error.</summary>
         public static async UniTask<R> MatchAsync<T, R>(this Result<T> result, Func<Error, UniTask<R>> onError, Func<T, UniTask<R>> onSuccess)
-            => result.IsSuccess ? await onSuccess(result._value) : await onError(result._error);
+            => result.IsSuccess(out var value) ? await onSuccess(value) : await onError(result.ErrorUnsafe());
 
         /// <summary>Sync pattern match on an async result: awaits the task, then calls the matching branch.</summary>
         public static async UniTask<R> Match<T, R>(this UniTask<Result<T>> resultTask, Func<Error, R> onError, Func<T, R> onSuccess)
         {
             var result = await resultTask;
-            return result.IsSuccess ? onSuccess(result._value) : onError(result._error);
+            return result.IsSuccess(out var value) ? onSuccess(value) : onError(result.ErrorUnsafe());
         }
 
         /// <summary>Async pattern match on an async result: awaits the task, then awaits the matching branch.</summary>
         public static async UniTask<R> MatchAsync<T, R>(this UniTask<Result<T>> resultTask, Func<Error, UniTask<R>> onError, Func<T, UniTask<R>> onSuccess)
         {
             var result = await resultTask;
-            return result.IsSuccess ? await onSuccess(result._value) : await onError(result._error);
+            return result.IsSuccess(out var value) ? await onSuccess(value) : await onError(result.ErrorUnsafe());
         }
 
         /// <summary>Void sync pattern match on an async result: awaits the task, then runs the matching action.</summary>
         public static async UniTask Match<T>(this UniTask<Result<T>> resultTask, Action<Error> onError, Action<T> onSuccess)
         {
             var result = await resultTask;
-            if (result.IsSuccess) onSuccess(result._value);
-            else onError(result._error);
+            if (result.IsSuccess(out var value)) onSuccess(value);
+            else onError(result.ErrorUnsafe());
         }
     }
 }

@@ -23,9 +23,9 @@ Convert any exception-throwing call into a `Result<T>` without a try/catch at th
 Result<T>    Try<T>(Func<T> f)
 Result<Unit> Try(Action action)
 
-// Returns UniTask<Result<T>>
-UniTask<Result<T>>    TryAsync<T>(Func<UniTask<T>> f)
-UniTask<Result<Unit>> TryAsync(Func<UniTask> action)
+// Returns UniTask<Result<T>>: on UniTaskF, in the Tutan.Functional.UniTask assembly
+UniTask<Result<T>>    UniTaskF.TryAsync<T>(Func<UniTask<T>> f)
+UniTask<Result<Unit>> UniTaskF.TryAsync(Func<UniTask> action)
 ```
 
 **Example — parsing and disk I/O**

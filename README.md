@@ -27,7 +27,8 @@ Practical rule: write for clarity in system-level code (loading, validation, con
 
 ## Installation
 
-**Optional:** [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`) enables the async API (`MapAsync`, `ThenAsync`, `TryAsync`, `UniTaskF`, …). The rest of the library compiles and works without it.
+**Optional:** [UniTask](https://github.com/Cysharp/UniTask) (`com.cysharp.unitask`) enables the async API (`MapAsync`, `ThenAsync`, `UniTaskF.TryAsync`, …), in its own assembly, `Tutan.Functional.UniTask`.
+The rest of the library compiles and works without it, and an assembly that references only `Tutan.Functional` never needs UniTask.
 - Installed as a UPM package (Git URL / OpenUPM): picked up automatically via the asmdef *Version Defines* (`TUTAN_UNITASK`).
 - Copied into `Assets/`: add `TUTAN_UNITASK` to *Project Settings › Player › Scripting Define Symbols*.
 
@@ -45,6 +46,7 @@ To install via Git URLs, add the entries to your project's `Packages/manifest.js
 Or clone/copy the package folder into your project's `Packages/` directory.
 
 `Tutan.Functional` is auto-referenced by `Assembly-CSharp`. Assemblies with their own `.asmdef` must add it to their references.
+So is `Tutan.Functional.UniTask`: an assembly with its own `.asmdef` that uses the async API adds it too, beside UniTask.
 To bring the `F` module helpers (`Some`, `None`, `Success`, `Try`, ...) into scope, add `using static Tutan.Functional.F;` per file. Alternatively, put `global using static Tutan.Functional.F;` once in your own assembly; that needs C# 10, i.e. a `csc.rsp` containing `-langversion:10` next to that assembly's `.asmdef`.
 
 ## Quick Example

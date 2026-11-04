@@ -55,8 +55,8 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 |---|---|
 | `Result<T> Try<T>(Func<T> f)` | Calls `f`, catches any exception, returns `Success` or `Error(ex.ToString())` |
 | `Result<Unit> Try(Action action)` | Same, for actions with no return value |
-| `UniTask<Result<T>> TryAsync<T>(Func<UniTask<T>> f)` | Async version of `Try` |
-| `UniTask<Result<Unit>> TryAsync(Func<UniTask> action)` | Async version for async actions |
+
+The async versions, `TryAsync`, are on `UniTaskF`, in the `Tutan.Functional.UniTask` assembly (see below).
 
 ### Function composition
 
@@ -175,7 +175,7 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 | `Optional<T> Then<T,TState>(this Optional<T> opt, TState state, Action<T,TState> action)` | State-passing side-effect, passes value through |
 | `Optional<T> Filter<T,TState>(this Optional<T> opt, TState state, Func<T,TState,bool> predicate)` | Filter without closure capture |
 
-#### Async (see also [Async.md](Async.md))
+#### Async (`OptionalAsyncExtensions`, assembly `Tutan.Functional.UniTask`; see also [Async.md](Async.md))
 
 | Signature | Description |
 |---|---|
@@ -336,7 +336,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `Result<T> Then<T,TState>(this Result<T> result, TState state, Action<T,TState> action)` | State-passing side-effect, passes value through |
 | `Result<T> Filter<T,TState>(this Result<T> result, TState state, Func<T,TState,bool> predicate)` | Filter without closure capture; `Error("Predicate not satisfied")` on false |
 
-#### Async (see also [Async.md](Async.md))
+#### Async (`ResultAsyncExtensions`, assembly `Tutan.Functional.UniTask`; see also [Async.md](Async.md))
 
 | Signature | Description |
 |---|---|
@@ -435,10 +435,12 @@ A function that validates a value and returns `Success(t)` or an `Error`.
 | `IEnumerable<R> Bind<T,R>(this IEnumerable<T> list, Func<T,Optional<R>> func)` | Flat-map filtering `None` |
 | `IEnumerable<Unit> ForEach<T>(this IEnumerable<T> ts, Action<T> action)` | Side-effect over sequence (lazy) |
 
-### `UniTaskF` (requires `TUTAN_UNITASK`)
+### `UniTaskF` (assembly `Tutan.Functional.UniTask`; requires `TUTAN_UNITASK`)
 
 | Signature | Description |
 |---|---|
+| `UniTask<Result<T>> UniTaskF.TryAsync<T>(Func<UniTask<T>> f)` | Async version of `Try`: awaits `f`, catches any exception, returns `Success` or `Error(ex.ToString())` |
+| `UniTask<Result<Unit>> UniTaskF.TryAsync(Func<UniTask> action)` | Same, for async actions with no return value |
 | `void UniTaskF.Void<T1,T2>(Func<T1,T2,UniTaskVoid> asyncAction, T1 arg1, T2 arg2)` | Fire-and-forget launch with explicit arguments instead of a capturing closure (2-5 argument overloads) |
 | `UniTask UniTaskF.WaitUntil<TState>(Func<TState,bool> predicate, TState state, PlayerLoopTiming timing = Update, CancellationToken ct = default)` | State-passing `WaitUntil`; state is held strongly - cancel via the token |
 

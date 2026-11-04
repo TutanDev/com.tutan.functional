@@ -4,6 +4,23 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Breaking: the async API is its own assembly, `Tutan.Functional.UniTask`.**
+  The core assembly, `Tutan.Functional`, no longer references UniTask.
+  `Assembly-CSharp` references the new assembly automatically; an assembly with its own `.asmdef` that uses the async API adds `Tutan.Functional.UniTask` to its references, beside UniTask.
+  It is still compiled only when UniTask is installed (`TUTAN_UNITASK`).
+- **Breaking:** `F.TryAsync` moved to `UniTaskF.TryAsync`, with the same signatures, since `F` stays in the core assembly.
+  Migrate by renaming the receiver, or with `using static Tutan.Functional.UniTaskF;`.
+- **Breaking:** the async operators moved from `OptionalExtensions` and `ResultExtensions` to `OptionalAsyncExtensions` and `ResultAsyncExtensions`.
+  Calls in extension form (`result.MapAsync(...)`) are unchanged; only a call that names the class does.
+
+### Fixed
+- An assembly that referenced `Tutan.Functional` but not UniTask failed to compile as soon as UniTask was installed and it called `Map`, `Bind` or `Then` on a `Result<T>` or an `Optional<T>`, with CS0012: "The type 'UniTask<>' is defined in an assembly that is not referenced".
+  The overloads on `UniTask<Result<T>>` and `UniTask<Optional<T>>` sat in the same classes as the sync ones, so the compiler had to read UniTask's types to rule them out.
+  Now that they are in their own assembly, such an assembly never meets them.
+
 ## [1.0.0] - 2026-07-05
 
 First Unity Asset Store release.

@@ -17,6 +17,11 @@ UniTask is an **optional dependency**. The core library (`Optional<T>`, `Result<
 - **UniTask installed as a UPM package** (`com.cysharp.unitask`, via Git URL or OpenUPM): the define is set automatically through the assembly definition's *Version Defines*. Nothing to do.
 - **UniTask copied into `Assets/`** (e.g. from the `.unitypackage` release): Version Defines only see UPM packages, so add `TUTAN_UNITASK` yourself in *Project Settings › Player › Scripting Define Symbols*.
 
+The async surface is its own assembly, `Tutan.Functional.UniTask`, so the core assembly never names a UniTask type.
+An assembly that references only `Tutan.Functional` compiles whether UniTask is installed or not, and calls `Map`, `Bind` and `Then` on a `Result<T>` without referencing UniTask.
+`Assembly-CSharp` references `Tutan.Functional.UniTask` automatically.
+An assembly with its own `.asmdef` that uses the async API adds both `Tutan.Functional.UniTask` and `UniTask` to its references.
+
 Install UniTask as a package:
 
 ```json
@@ -47,16 +52,18 @@ The same three-form pattern applies to `Result<T>` and `BindAsync` / `MatchAsync
 ## `TryAsync` — async exception wrapping
 
 ```csharp
-UniTask<Result<T>>    TryAsync<T>(Func<UniTask<T>> f)
-UniTask<Result<Unit>> TryAsync(Func<UniTask> action)
+UniTask<Result<T>>    UniTaskF.TryAsync<T>(Func<UniTask<T>> f)
+UniTask<Result<Unit>> UniTaskF.TryAsync(Func<UniTask> action)
 ```
 
 Wraps an async call that may throw into a `Result`. Use this at every external async boundary.
+It is on `UniTaskF`, not `F`, since `F` is in the core assembly: the samples on this page bring it into scope with `using static Tutan.Functional.UniTaskF;`.
 
 ```csharp
 using Cysharp.Threading.Tasks;
 using Tutan.Functional;
 using static Tutan.Functional.F;
+using static Tutan.Functional.UniTaskF;
 
 public async UniTask<Result<string>> FetchJsonAsync(string url)
 {
@@ -245,9 +252,9 @@ public async UniTask<Result<SaveData>> LoadAndValidateAsync(string path)
 
 ---
 
-## `UniTaskF` — closure-free `Void` and `WaitUntil`
+## `UniTaskF` - `TryAsync`, and closure-free `Void` and `WaitUntil`
 
-`UniTaskF` (namespace `Tutan.Functional`) provides state-passing counterparts of two UniTask built-ins, so hot-path launches and polling stay closure-free:
+`UniTaskF` (namespace `Tutan.Functional`, assembly `Tutan.Functional.UniTask`) holds `TryAsync`, described above, and state-passing counterparts of two UniTask built-ins, so hot-path launches and polling stay closure-free:
 
 ```csharp
 // Fire-and-forget with explicit arguments instead of a capturing closure (2-5 arguments)
@@ -269,6 +276,10 @@ await UniTaskF.WaitUntil(static hp => hp.Current <= 0, healthComponent, cancella
 ```
 
 > Before 1.0.0 these were `UniTask.Void` / `UniTask.WaitUntil`, injected into UniTask's own assembly through an `.asmref`. That couldn't be made conditional, so they moved to `UniTaskF`. Migrate by renaming the receiver.
+
+> In 1.0.0, `TryAsync` was on `F`, and the async operators were in `OptionalExtensions` and `ResultExtensions`, all in the core assembly.
+> So an assembly that called `Map` on a `Result<T>` had to reference UniTask once UniTask was installed.
+> To migrate, call `UniTaskF.TryAsync` (or add `using static Tutan.Functional.UniTaskF;`), name `OptionalAsyncExtensions` or `ResultAsyncExtensions` where you called an operator as a static method, and add `Tutan.Functional.UniTask` to an `.asmdef` that uses the async API.
 
 Unlike UniTask's `WaitUntilValueChanged`, the state in `WaitUntil` is held strongly (no `WeakReference`); tie the wait to the object's lifetime with a `CancellationToken` (e.g. `this.GetCancellationTokenOnDestroy()`).
 

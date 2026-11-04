@@ -62,7 +62,7 @@ The composite constructor joins messages with `"; "` and stores all errors as in
 
 ### From an exception
 
-`F.Try` and `F.TryAsync` automatically convert exceptions to `Error`:
+`F.Try` and `UniTaskF.TryAsync` automatically convert exceptions to `Error`:
 
 ```csharp
 Result<int> result = Try(() => int.Parse("bad"));

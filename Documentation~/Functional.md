@@ -105,7 +105,7 @@ In short: this is an **allocation-conscious** library, not a zero-allocation one
 
 ## Quick Install
 
-**Optional:** install [UniTask](https://github.com/Cysharp/UniTask) to enable the async API (`ThenAsync`, `TryAsync`, …). Without it, everything else still compiles. See [Async](Async.md) for setup.
+**Optional:** install [UniTask](https://github.com/Cysharp/UniTask) to enable the async API (`ThenAsync`, `UniTaskF.TryAsync`, …), which is its own assembly, `Tutan.Functional.UniTask`. Without it, everything else still compiles. See [Async](Async.md) for setup.
 
 Install the package with one of:
 - **Asset Store:** *Window › Package Manager › My Assets › Tutan Functional › Install*.
@@ -113,6 +113,7 @@ Install the package with one of:
 - **Embedded:** copy the package folder into your project's `Packages/` directory (no manifest entry needed).
 
 If your code lives in an assembly with its own `.asmdef`, add a reference to `Tutan.Functional` (`Assembly-CSharp` gets it automatically).
+If it uses the async API, add `Tutan.Functional.UniTask` and `UniTask` as well.
 
 Then add this using at the top of any file:
 

@@ -8,7 +8,7 @@ License Type: MIT
 
 UniTask is an optional dependency (installed separately, not included). This package also
 includes source code adapted from UniTask: the `WaitUntil` promise implementation in
-`Runtime/Extensions/UniTask/UniTaskF.cs`.
+`Runtime/UniTask/UniTaskF.cs`.
 
 The MIT License (MIT)
 

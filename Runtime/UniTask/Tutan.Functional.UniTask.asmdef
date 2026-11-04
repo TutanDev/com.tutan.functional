@@ -1,0 +1,23 @@
+{
+    "name": "Tutan.Functional.UniTask",
+    "rootNamespace": "Tutan.Functional",
+    "references": [
+        "GUID:24c3fc5ca3568e8459fa78711f324a01",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.cysharp.unitask",
+            "expression": "",
+            "define": "TUTAN_UNITASK"
+        }
+    ],
+    "noEngineReferences": false
+}
