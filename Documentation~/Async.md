@@ -49,7 +49,7 @@ The same three-form pattern applies to `Result<T>` and `BindAsync` / `MatchAsync
 
 ---
 
-## `TryAsync` — async exception wrapping
+## `TryAsync` - async exception wrapping
 
 ```csharp
 UniTask<Result<T>>    UniTaskF.TryAsync<T>(Func<UniTask<T>> f)
@@ -79,7 +79,7 @@ public async UniTask<Result<string>> FetchJsonAsync(string url)
 
 ## `ThenAsync` on `Optional<T>`
 
-### Map overload — transform the value asynchronously
+### Map overload - transform the value asynchronously
 
 ```csharp
 UniTask<Optional<R>> ThenAsync<T, R>(this Optional<T> opt, Func<T, UniTask<R>> func)
@@ -92,7 +92,7 @@ Optional<GameObject> prefab = await path.ThenAsync(async p =>
     await Resources.LoadAsync<GameObject>(p) as GameObject);
 ```
 
-### Bind overload — chain to another async optional
+### Bind overload - chain to another async optional
 
 ```csharp
 UniTask<Optional<R>> ThenAsync<T, R>(this Optional<T> opt, Func<T, UniTask<Optional<R>>> func)
@@ -104,7 +104,7 @@ Optional<Enemy> enemy = await path
     .ThenAsync(SpawnEnemyAsync);       // UniTask<Optional<Enemy>>
 ```
 
-### Side-effect overload — run an async action, pass value through
+### Side-effect overload - run an async action, pass value through
 
 ```csharp
 UniTask<Optional<T>> ThenAsync<T>(this Optional<T> opt, Func<T, UniTask> action)
@@ -169,7 +169,7 @@ Optional<Enemy> result = await Some("Prefabs/Boss")
 
 Terminal operator that awaits the result and calls the appropriate branch. Useful at the end of async pipelines.
 
-### On `Optional<T>` — async branches
+### On `Optional<T>` - async branches
 
 ```csharp
 UniTask<R> MatchAsync<T, R>(this Optional<T> opt,
@@ -177,7 +177,7 @@ UniTask<R> MatchAsync<T, R>(this Optional<T> opt,
     Func<T, UniTask<R>> onSome)
 ```
 
-### On `UniTask<Optional<T>>` — sync branches
+### On `UniTask<Optional<T>>` - sync branches
 
 ```csharp
 UniTask<R> Match<T, R>(this UniTask<Optional<T>> optTask,
@@ -190,7 +190,7 @@ UniTask Match<T>(this UniTask<Optional<T>> optTask,
     Action<T> onSome)
 ```
 
-### On `UniTask<Optional<T>>` — async branches
+### On `UniTask<Optional<T>>` - async branches
 
 ```csharp
 UniTask<R> MatchAsync<T, R>(this UniTask<Optional<T>> optTask,
@@ -288,6 +288,6 @@ Unlike UniTask's `WaitUntilValueChanged`, the state in `WaitUntil` is held stron
 ## Practical guidance
 
 - Use `TryAsync` at every async boundary that might throw.
-- Use `ThenAsync` to keep async chains flat — avoid nesting `await` calls inside lambdas when you can chain instead.
+- Use `ThenAsync` to keep async chains flat - avoid nesting `await` calls inside lambdas when you can chain instead.
 - Use `Then` (sync overload on `UniTask<...>`) to interleave cheap synchronous transformations without adding extra `async/await` state machines.
-- Always `await` the final `UniTask` — forgetting to await silently swallows errors.
+- Always `await` the final `UniTask` - forgetting to await silently swallows errors.

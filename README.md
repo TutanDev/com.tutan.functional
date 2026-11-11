@@ -4,24 +4,24 @@ A lightweight functional programming library for Unity providing core FP primiti
 
 ## Core Types
 
-- **`Optional<T>`** — A value that may or may not exist. Replaces null checks with explicit `Some`/`None` semantics. Null and destroyed `UnityEngine.Object` references become `None` at creation; call `Alive()` to re-check later.
-- **`Result<T>`** — An operation outcome carrying either a success value `T` or an `Error`. Replaces exception-based error handling with composable, type-safe results.
-- **`Error`** — An immutable struct with a `Message`, an optional integer `Code`, and nested/composite `InnerErrors` for validation scenarios.
-- **`Unit`** — `System.ValueTuple`, used as a void substitute (`Result<Unit>`). The package's `Unit` alias is internal to its assembly; add `using Unit = System.ValueTuple;` in your own files.
+- **`Optional<T>`** - A value that may or may not exist. Replaces null checks with explicit `Some`/`None` semantics. Null and destroyed `UnityEngine.Object` references become `None` at creation; call `Alive()` to re-check later.
+- **`Result<T>`** - An operation outcome carrying either a success value `T` or an `Error`. Replaces exception-based error handling with composable, type-safe results.
+- **`Error`** - An immutable struct with a `Message`, an optional integer `Code`, and nested/composite `InnerErrors` for validation scenarios.
+- **`Unit`** - `System.ValueTuple`, used as a void substitute (`Result<Unit>`). The package's `Unit` alias is internal to its assembly; add `using Unit = System.ValueTuple;` in your own files.
 
 ## Key Features
 
-- **Monadic API** — `Map`, `Bind`, `Apply`, and LINQ query syntax (`from x in opt select ...`) on both `Optional<T>` and `Result<T>`.
-- **Fluent chaining** — `Then` as a unified synonym for `Map`/`Bind`, plus `Or`/`OrElse`/`IfFail` fallbacks, and `Filter` predicates.
-- **Currying & Piping** — `Curry` (2–3 arguments), `CurryFirst` (3–9 arguments), `Pipe`, and `Tee` for point-free composition.
-- **Validation** — `FailFast` and `HarvestErrors` combinators for composing `Validator<T>` pipelines.
-- **Safe exception handling** — `Try` wraps throwing code into `Result<T>`.
-- **IEnumerable extensions** — `Head`, `FindFirst`, `Flatten`, `DropWhile`, `Match` (head/tail decomposition), and monadic `Map`/`Bind`/`ForEach`.
-- **Unity integration** — `LookupComponent<T>`, `LookupParent` returning `Optional<T>` instead of null, and `Alive()` to re-check object lifetime at point of use. Optionals over `UnityEngine.Object` are scope-local: `Some` snapshots fake-null at creation, so call `Alive()` whenever one crosses a frame boundary.
+- **Monadic API** - `Map`, `Bind`, `Apply`, and LINQ query syntax (`from x in opt select ...`) on both `Optional<T>` and `Result<T>`.
+- **Fluent chaining** - `Then` as a unified synonym for `Map`/`Bind`, plus `Or`/`OrElse`/`IfFail` fallbacks, and `Filter` predicates.
+- **Currying & Piping** - `Curry` (2–3 arguments), `CurryFirst` (3–9 arguments), `Pipe`, and `Tee` for point-free composition.
+- **Validation** - `FailFast` and `HarvestErrors` combinators for composing `Validator<T>` pipelines.
+- **Safe exception handling** - `Try` wraps throwing code into `Result<T>`.
+- **IEnumerable extensions** - `Head`, `FindFirst`, `Flatten`, `DropWhile`, `Match` (head/tail decomposition), and monadic `Map`/`Bind`/`ForEach`.
+- **Unity integration** - `LookupComponent<T>`, `LookupParent` returning `Optional<T>` instead of null, and `Alive()` to re-check object lifetime at point of use. Optionals over `UnityEngine.Object` are scope-local: `Some` snapshots fake-null at creation, so call `Alive()` whenever one crosses a frame boundary.
 
 ## Performance Notes
 
-The core types (`Optional<T>`, `Result<T>`, `Error`) are allocation-free structs — but the fluent operators are only as free as the lambdas you pass them. A lambda that captures locals or `this` allocates a closure per call. A capture-free lambda is cached by the compiler, and the operators themselves add no allocations, so such a call costs nothing on the heap.
+The core types (`Optional<T>`, `Result<T>`, `Error`) are allocation-free structs - but the fluent operators are only as free as the lambdas you pass them. A lambda that captures locals or `this` allocates a closure per call. A capture-free lambda is cached by the compiler, and the operators themselves add no allocations, so such a call costs nothing on the heap.
 
 Practical rule: write for clarity in system-level code (loading, validation, config, UI events); in per-frame hot paths keep lambdas capture-free (mark them `static`), use the state-passing overloads (`Map`, `Bind`, `Then`, `Filter`, and `Match` all take a `TState`), or exit the pipeline with `HasValue(out var v)` / `IsSuccess(out var v)`. Full guidance in [Documentation~/Functional.md → Performance & Hot Paths](Documentation~/Functional.md#performance--hot-paths).
 

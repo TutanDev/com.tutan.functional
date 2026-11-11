@@ -129,7 +129,7 @@ public void Report(int score)
 }
 ```
 
-`IfFail` runs only on the error branch — either to recover into another `Result` or to observe the error and pass the original through:
+`IfFail` runs only on the error branch - either to recover into another `Result` or to observe the error and pass the original through:
 
 ```csharp
 SaveScore(score)

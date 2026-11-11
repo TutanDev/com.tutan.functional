@@ -8,7 +8,7 @@ Scannable reference for the public API. Signatures are simplified (type constrai
 
 ---
 
-## F — static module (`Tutan.Functional.F`)
+## F - static module (`Tutan.Functional.F`)
 
 Bring into scope with `using static Tutan.Functional.F;` (or a `global using static` in your own assembly, which needs C# 10 there).
 
@@ -34,9 +34,9 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 |---|---|
 | `Result<Unit> Success()` | Creates a successful `Result` with no value |
 | `Result<T> Success<T>(T value)` | Creates a successful `Result`. Returns `Error("Value is null")` for null references and destroyed Unity objects. |
-| `Result<Unit> Fail(Error error)` | Creates a failed `Result` with no value — the partner of `Success()` |
+| `Result<Unit> Fail(Error error)` | Creates a failed `Result` with no value - the partner of `Success()` |
 | `Result<Unit> Fail(string message)` | Same, from a message string |
-| `Result<T> Fail<T>(Error error)` | Creates a failed `Result<T>` — explicit alternative to the implicit `Error → Result<T>` cast |
+| `Result<T> Fail<T>(Error error)` | Creates a failed `Result<T>` - explicit alternative to the implicit `Error → Result<T>` cast |
 | `Result<T> Fail<T>(string message)` | Same, from a message string |
 
 ### Error construction
@@ -45,9 +45,9 @@ Bring into scope with `using static Tutan.Functional.F;` (or a `global using sta
 |---|---|
 | `Error Error(string message)` | Simple error with a message |
 | `Error Error(string message, int code)` | Error with a machine-readable code |
-| `Error Error(string message, Error inner)` | Nested error — message + cause |
+| `Error Error(string message, Error inner)` | Nested error - message + cause |
 | `Error Error(string message, int code, Error inner)` | Nested error with a code |
-| `Error Error(IEnumerable<Error> errors)` | Composite error — joins all messages; stores all as inner errors |
+| `Error Error(IEnumerable<Error> errors)` | Composite error - joins all messages; stores all as inner errors |
 
 ### Exception wrapping
 
@@ -127,9 +127,9 @@ The async versions, `TryAsync`, are on `UniTaskF`, in the `Tutan.Functional.UniT
 
 | Signature | Description |
 |---|---|
-| `Optional<R> Then<T,R>(this Optional<T> opt, Func<T,R> func)` | Map — applies `func` if `Some` |
+| `Optional<R> Then<T,R>(this Optional<T> opt, Func<T,R> func)` | Map - applies `func` if `Some` |
 | `Optional<T> Then<T>(this Optional<T> opt, Action<T> action)` | Side-effect pass-through |
-| `Optional<R> Then<T,R>(this Optional<T> opt, Func<T,Optional<R>> func)` | Bind — flatMap |
+| `Optional<R> Then<T,R>(this Optional<T> opt, Func<T,Optional<R>> func)` | Bind - flatMap |
 | `Optional<R> Map<T,R>(this Optional<T> opt, Func<T,R> f)` | Alias for `Then(Func<T,R>)` |
 | `Optional<Func<T2,R>> Map<T1,T2,R>(this Optional<T1> opt, Func<T1,T2,R> f)` | Curried map of a 2-argument function |
 | `Optional<Func<T2,T3,R>> Map<T1,T2,T3,R>(this Optional<T1> opt, Func<T1,T2,T3,R> f)` | Map of a 3-argument function, fixing the first argument |
@@ -193,7 +193,7 @@ The async versions, `TryAsync`, are on `UniTaskF`, in the `Tutan.Functional.UniT
 | `UniTask Match<T>(this UniTask<Optional<T>> optTask, Action onNone, Action<T> onSome)` | Void sync match on async optional |
 | `UniTask<R> MatchAsync<T,R>(this UniTask<Optional<T>> optTask, Func<UniTask<R>> onNone, Func<T,UniTask<R>> onSome)` | Async match on async optional |
 
-> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators — same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
+> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators - same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
 
 ---
 
@@ -223,7 +223,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `(implicit) operator Optional<T>(SerializableOptional<T>)` | Implicit cast to `Optional<T>` |
 | `(implicit) operator SerializableOptional<T>(Optional<T>)` | Implicit cast from `Optional<T>` |
 
-### Editor — `SerializableOptionalDrawer`
+### Editor - `SerializableOptionalDrawer`
 
 `CustomPropertyDrawer` registered for the open generic `SerializableOptional<>`, so it applies to every closed `SerializableOptional<T>`. Renders a toggle bound to `_hasValue` next to the `_value` field, which is enabled only while the toggle is on. It implements UI Toolkit (`CreatePropertyGUI`) plus an IMGUI fallback (`OnGUI`, `GetPropertyHeight`) for inspectors drawn with IMGUI.
 
@@ -251,13 +251,13 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 | Signature | Description |
 |---|---|
-| `operator true` / `operator false` | Truthy on success — enables `if (result)`, `while (result)` and `result ? a : b`. `&&` / `\|\|` are **not** supported (no `operator &` / `\|`) |
+| `operator true` / `operator false` | Truthy on success - enables `if (result)`, `while (result)` and `result ? a : b`. `&&` / `\|\|` are **not** supported (no `operator &` / `\|`) |
 
 ### Core methods
 
 | Signature | Description |
 |---|---|
-| `R Match<R>(Func<Error,R> onError, Func<T,R> onSuccess)` | Pattern match — extract value or handle error |
+| `R Match<R>(Func<Error,R> onError, Func<T,R> onSuccess)` | Pattern match - extract value or handle error |
 | `Unit Match(Action<Error> onError, Action<T> onSuccess)` | Void pattern match |
 | `string ToString()` | `"Success: {value}"` or `"Error: {message}"` |
 
@@ -280,7 +280,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 #### Void results (`Result<Unit>`)
 
-`Match` overloads that drop the throwaway `Unit` argument on the success branch — write `() => …` instead of `_ => …`. Disambiguated from the instance `Match` by the success delegate's arity.
+`Match` overloads that drop the throwaway `Unit` argument on the success branch - write `() => …` instead of `_ => …`. Disambiguated from the instance `Match` by the success delegate's arity.
 
 | Signature | Description |
 |---|---|
@@ -291,9 +291,9 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 
 | Signature | Description |
 |---|---|
-| `Result<R> Then<T,R>(this Result<T> result, Func<T,R> func)` | Map — applies `func` on success |
+| `Result<R> Then<T,R>(this Result<T> result, Func<T,R> func)` | Map - applies `func` on success |
 | `Result<T> Then<T>(this Result<T> result, Action<T> action)` | Side-effect pass-through |
-| `Result<R> Then<T,R>(this Result<T> result, Func<T,Result<R>> func)` | Bind — flatMap |
+| `Result<R> Then<T,R>(this Result<T> result, Func<T,Result<R>> func)` | Bind - flatMap |
 | `Result<R> Map<T,R>(this Result<T> result, Func<T,R> f)` | Alias for `Then(Func<T,R>)` |
 | `Result<Func<T2,R>> Map<T1,T2,R>(this Result<T1> result, Func<T1,T2,R> f)` | Curried map of a 2-argument function |
 | `Result<Func<T2,T3,R>> Map<T1,T2,T3,R>(this Result<T1> result, Func<T1,T2,T3,R> f)` | Map of a 3-argument function, fixing the first argument |
@@ -354,7 +354,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `UniTask Match<T>(this UniTask<Result<T>> resultTask, Action<Error> onError, Action<T> onSuccess)` | Void sync match on async result |
 | `UniTask<R> MatchAsync<T,R>(this UniTask<Result<T>> resultTask, Func<Error,UniTask<R>> onError, Func<T,UniTask<R>> onSuccess)` | Async match on async result |
 
-> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators — same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
+> `MapAsync` and `BindAsync` are the underlying primitives behind these async operators - same three sync/async receiver-and-function forms, plus the sync-function-on-async-receiver forms named `Map`/`Bind`. The `ThenAsync`/`Then` rows above are unified aliases over them, exactly as in the sync API.
 
 ---
 
@@ -368,7 +368,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 | `Error(string message, int code)` | Error with a machine-readable code |
 | `Error(string message, Error inner)` | Nested error |
 | `Error(string message, int code, Error inner)` | Nested error with a code |
-| `Error(IEnumerable<Error> errors)` | Composite — joins all messages; stores all as inner |
+| `Error(IEnumerable<Error> errors)` | Composite - joins all messages; stores all as inner |
 | `(implicit) Error(string message)` | Implicit cast from `string` |
 
 ### Properties
@@ -377,7 +377,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 |---|---|
 | `string Message` | Human-readable error description |
 | `int Code` | Optional machine-readable error code; `0` when unspecified |
-| `ReadOnlySpan<Error> InnerErrors` | Inner errors (empty span when none). Cannot cross async boundaries — call `.ToArray()` if needed. |
+| `ReadOnlySpan<Error> InnerErrors` | Inner errors (empty span when none). Cannot cross async boundaries - call `.ToArray()` if needed. |
 
 ### Methods
 
@@ -385,7 +385,7 @@ Inspector-serializable counterpart to `Optional<T>`. Use as a `[SerializeField]`
 |---|---|
 | `IEnumerable<Error> AsEnumerable()` | `{ this }` for simple/nested; the direct inner errors (one level) for composite |
 | `override string ToString()` | Returns `Message` (or `string.Empty` for default) |
-| `bool Equals(Error other)` / `==` / `!=` | Deep equality — compares `Message`, `Code`, composite/nested shape, and all inner errors |
+| `bool Equals(Error other)` / `==` / `!=` | Deep equality - compares `Message`, `Code`, composite/nested shape, and all inner errors |
 
 ---
 

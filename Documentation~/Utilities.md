@@ -2,7 +2,7 @@
 
 ---
 
-# Utilities — F module & extension methods
+# Utilities - F module & extension methods
 
 This document covers the utility belt that underpins the library: the `F` static module, `IEnumerable` extensions, and Unity-specific lookup helpers.
 
@@ -14,7 +14,7 @@ Add `using static Tutan.Functional.F;` to bring all helpers into scope (or add `
 
 ---
 
-### `Try` / `TryAsync` — wrapping exception-throwing code
+### `Try` / `TryAsync` - wrapping exception-throwing code
 
 Convert any exception-throwing call into a `Result<T>` without a try/catch at the call site.
 
@@ -28,7 +28,7 @@ UniTask<Result<T>>    UniTaskF.TryAsync<T>(Func<UniTask<T>> f)
 UniTask<Result<Unit>> UniTaskF.TryAsync(Func<UniTask> action)
 ```
 
-**Example — parsing and disk I/O**
+**Example - parsing and disk I/O**
 
 ```csharp
 using Tutan.Functional;
@@ -40,7 +40,7 @@ Result<int> lives = Try(() => int.Parse(rawInput));
 // File I/O
 Result<string> json = Try(() => System.IO.File.ReadAllText(savePath));
 
-// Chained — read, parse, then validate (null JSON results already become Error("Value is null"))
+// Chained - read, parse, then validate (null JSON results already become Error("Value is null"))
 Result<PlayerConfig> config = json
     .Then(j => Try(() => JsonUtility.FromJson<PlayerConfig>(j)))
     .Then(c => Validate(c));
@@ -50,7 +50,7 @@ Result<PlayerConfig> config = json
 
 ---
 
-### `Tee` — side-effects without breaking pipelines
+### `Tee` - side-effects without breaking pipelines
 
 Run an `Action` inside a pipeline without changing the value or type being passed through.
 
@@ -58,11 +58,11 @@ Run an `Action` inside a pipeline without changing the value or type being passe
 // Wraps Action in Func<Unit>
 Func<Unit> Tee(Action function)
 
-// Wraps Action<T> in Func<T, T> — passes T through unchanged
+// Wraps Action<T> in Func<T, T> - passes T through unchanged
 Func<T, T> Tee<T>(Action<T> function)
 ```
 
-**Example — logging mid-pipeline**
+**Example - logging mid-pipeline**
 
 ```csharp
 using UnityEngine;
@@ -80,7 +80,7 @@ On `Optional<T>`/`Result<T>` you usually don't need `Tee`: `Then(Action<T>)` run
 
 ---
 
-### `Pipe` — forward function application
+### `Pipe` - forward function application
 
 Apply a function to a value in a left-to-right, readable style.
 
@@ -100,21 +100,21 @@ int result = 5.Pipe(x => x * 2)   // 10
 
 ---
 
-### `Curry` / `CurryFirst` — partial application
+### `Curry` / `CurryFirst` - partial application
 
 Convert multi-argument functions into chains of single-argument functions.
 
 ```csharp
-// Curry — curries all parameters one by one
+// Curry - curries all parameters one by one
 Func<T1, Func<T2, R>>         Curry<T1, T2, R>(this Func<T1, T2, R> func)
 Func<T1, Func<T2, Func<T3,R>>> Curry<T1, T2, T3, R>(this Func<T1, T2, T3, R> func)
 
-// CurryFirst — fixes only the first argument; rest remain as a tuple
+// CurryFirst - fixes only the first argument; rest remain as a tuple
 Func<T1, Func<T2, T3, R>>     CurryFirst<T1, T2, T3, R>(this Func<T1, T2, T3, R> @this)
 // ... up to 9-argument overloads
 ```
 
-**Example — factory with a fixed dependency**
+**Example - factory with a fixed dependency**
 
 ```csharp
 Func<string, int, Enemy> createEnemy = (name, hp) => new Enemy(name, hp);
@@ -126,7 +126,7 @@ Enemy weak   = createGoblin(10);
 Enemy strong = createGoblin(50);
 ```
 
-**Example — applicative style with `Optional<T>.Apply`**
+**Example - applicative style with `Optional<T>.Apply`**
 
 ```csharp
 Optional<Func<string, int, Enemy>> optFactory = Some(createEnemy);
@@ -135,7 +135,7 @@ Optional<Enemy> enemy = optFactory.Apply(Some("Orc")).Apply(Some(30));   // the 
 
 ---
 
-### `Unit` — the empty value
+### `Unit` - the empty value
 
 ```csharp
 Unit Unit()  // returns default(ValueTuple)
@@ -147,7 +147,7 @@ Used as the value type for `Result<Unit>` when an operation succeeds but has no 
 
 ---
 
-### `List<T>` — create an `IEnumerable<T>` from params
+### `List<T>` - create an `IEnumerable<T>` from params
 
 ```csharp
 IEnumerable<T> List<T>(params T[] items)
@@ -163,7 +163,7 @@ IEnumerable<int> scores = List(10, 20, 30);
 
 ## `IEnumerable` extensions (`EnumerableExt`)
 
-### `Head<T>` — first element as `Optional<T>`
+### `Head<T>` - first element as `Optional<T>`
 
 ```csharp
 Optional<T> Head<T>(this IEnumerable<T> list)
@@ -175,7 +175,7 @@ Returns `Some(first)` or `None` if the sequence is empty or null. Never throws. 
 Optional<Enemy> first = enemies.Head();
 ```
 
-### `FindFirst<T>` — predicate search as `Optional<T>`
+### `FindFirst<T>` - predicate search as `Optional<T>`
 
 ```csharp
 Optional<T> FindFirst<T>(this IEnumerable<T> source, Func<T, bool> predicate)
@@ -190,7 +190,7 @@ boss.Match(
     onSome: e => Debug.Log($"Boss: {e.Name}"));
 ```
 
-### `Flatten<T>` — flattens nested sequences
+### `Flatten<T>` - flattens nested sequences
 
 ```csharp
 IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> list)
@@ -202,7 +202,7 @@ Equivalent to `SelectMany(x => x)`.
 IEnumerable<Item> allItems = zones.Map(z => z.Items).Flatten();
 ```
 
-### `Match<T, R>` — structural match on a sequence
+### `Match<T, R>` - structural match on a sequence
 
 ```csharp
 R Match<T, R>(this IEnumerable<T> list,
@@ -219,7 +219,7 @@ string summary = enemies.Match(
     Otherwise: (first, rest) => $"{first.Name} and {rest.Count()} others");
 ```
 
-### `DropWhile<T>` — skip leading elements matching a predicate
+### `DropWhile<T>` - skip leading elements matching a predicate
 
 ```csharp
 IEnumerable<T> DropWhile<T>(this IEnumerable<T> source, Func<T, bool> pred)
@@ -232,13 +232,13 @@ Skips elements while the predicate is true, then yields everything from the firs
 var trimmed = values.DropWhile(v => v == 0);
 ```
 
-### `Map<T, R>` — alias for `Select`
+### `Map<T, R>` - alias for `Select`
 
 ```csharp
 IEnumerable<R> Map<T, R>(this IEnumerable<T> list, Func<T, R> func)
 ```
 
-### `Bind<T, R>` — `SelectMany` / flat-map, with `Optional<R>` overload
+### `Bind<T, R>` - `SelectMany` / flat-map, with `Optional<R>` overload
 
 ```csharp
 IEnumerable<R> Bind<T, R>(this IEnumerable<T> list, Func<T, IEnumerable<R>> func)
@@ -252,13 +252,13 @@ The `Optional<R>` overload filters out `None` results automatically:
 IEnumerable<Weapon> weapons = enemies.Bind(e => e.EquippedWeapon); // Optional<Weapon>
 ```
 
-### `ForEach<T>` — side-effect over a sequence
+### `ForEach<T>` - side-effect over a sequence
 
 ```csharp
 IEnumerable<Unit> ForEach<T>(this IEnumerable<T> ts, Action<T> action)
 ```
 
-Note: this is lazy — enumerate the result or call `.ToList()` to force execution.
+Note: this is lazy - enumerate the result or call `.ToList()` to force execution.
 
 ---
 
@@ -266,7 +266,7 @@ Note: this is lazy — enumerate the result or call `.ToList()` to force executi
 
 These are the most common Unity null-check patterns wrapped into `Optional<T>`-returning extension methods.
 
-### `LookupComponent<T>` — safe `TryGetComponent`
+### `LookupComponent<T>` - safe `TryGetComponent`
 
 ```csharp
 Optional<T> LookupComponent<T>(this GameObject go) where T : Component
@@ -282,7 +282,7 @@ rb.Match(
     onSome: r => r.AddForce(Vector3.up * 10f));
 ```
 
-### `LookupParent` — safe parent transform access
+### `LookupParent` - safe parent transform access
 
 ```csharp
 Optional<Transform> LookupParent(this Transform t)
@@ -298,7 +298,7 @@ Vector3 parentPos = parent
     .Or(Vector3.zero);
 ```
 
-### `Lookup<K, T>` — safe dictionary access
+### `Lookup<K, T>` - safe dictionary access
 
 ```csharp
 Optional<T> Lookup<K, T>(this IDictionary<K, T> dict, K key)

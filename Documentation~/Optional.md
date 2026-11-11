@@ -113,7 +113,7 @@ public static class SaveReader
 
 ## 5) Inspector-serializable optionals
 
-`Optional<T>` is a `readonly record struct` and is intentionally not Unity-serializable — exposing it on a `MonoBehaviour` would defeat the explicit `Some`/`None` distinction. For fields you want to author in the Inspector, use `SerializableOptional<T>`:
+`Optional<T>` is a `readonly record struct` and is intentionally not Unity-serializable - exposing it on a `MonoBehaviour` would defeat the explicit `Some`/`None` distinction. For fields you want to author in the Inspector, use `SerializableOptional<T>`:
 
 ```csharp
 using UnityEngine;
@@ -138,8 +138,8 @@ public class EnemySpawner : MonoBehaviour
 
 `SerializableOptional<T>` is a `[Serializable]` struct with a `_hasValue` toggle and an inner `_value`. It converts both ways with `Optional<T>`:
 
-- `someOpt.ToOptional()` — explicit conversion to `Optional<T>`.
-- `SerializableOptional<T>.From(opt)` — explicit conversion from `Optional<T>`.
+- `someOpt.ToOptional()` - explicit conversion to `Optional<T>`.
+- `SerializableOptional<T>.From(opt)` - explicit conversion from `Optional<T>`.
 - Implicit casts in both directions are also available, so a field typed as `SerializableOptional<T>` can be passed to any `Optional<T>` parameter. Implicit conversions don't apply to extension-method receivers: call `.ToOptional()` before chaining `Then`/`Map`/…
 
 ### Custom Inspector drawer
@@ -154,31 +154,31 @@ This gives Inspector authors a clear "use this value / leave it unset" UX withou
 ### Practical guidance
 
 - Use `SerializableOptional<T>` **only** at the serialization boundary (`[SerializeField]`, `ScriptableObject` data). Convert to `Optional<T>` as early as possible and keep the rest of the pipeline in terms of `Optional<T>`.
-- Don't expose `SerializableOptional<T>` from public APIs — it's a UI/serialization concern, not a domain concern.
+- Don't expose `SerializableOptional<T>` from public APIs - it's a UI/serialization concern, not a domain concern.
 
 ## Unity object lifetimes: the scope-local rule
 
-`Optional<T>` is an immutable snapshot. `Some` checks Unity's fake-null **once, at creation** — it does not track the object afterwards. If the wrapped `UnityEngine.Object` is destroyed later, the optional still reports `IsSome == true` and will happily hand out a destroyed reference:
+`Optional<T>` is an immutable snapshot. `Some` checks Unity's fake-null **once, at creation** - it does not track the object afterwards. If the wrapped `UnityEngine.Object` is destroyed later, the optional still reports `IsSome == true` and will happily hand out a destroyed reference:
 
 ```csharp
 Optional<GameObject> cached = Some(enemy);
 Object.Destroy(enemy);
 
 // After the frame ends (Destroy is deferred):
-Debug.Log(cached.IsSome);          // True  — the snapshot is stale
-Debug.Log(cached.Alive().IsSome);  // False — Alive() re-checks Unity lifetime
+Debug.Log(cached.IsSome);          // True  - the snapshot is stale
+Debug.Log(cached.Alive().IsSome);  // False - Alive() re-checks Unity lifetime
 ```
 
-This is deliberate. Unity itself doesn't track lifetimes ambiently either — a destroyed object sitting in a plain C# field is just as stale until you explicitly test it with `if (obj)`. Baking the check into `IsSome`/`Match` would make two equal optionals behave differently over time and tax every non-Unity `T` with a check it doesn't need.
+This is deliberate. Unity itself doesn't track lifetimes ambiently either - a destroyed object sitting in a plain C# field is just as stale until you explicitly test it with `if (obj)`. Baking the check into `IsSome`/`Match` would make two equal optionals behave differently over time and tax every non-Unity `T` with a check it doesn't need.
 
 So the rule is:
 
-> **An `Optional<T>` over a `UnityEngine.Object` is scope-local — treat it as valid only within the frame/method that created it.**
+> **An `Optional<T>` over a `UnityEngine.Object` is scope-local - treat it as valid only within the frame/method that created it.**
 
 When an optional has to live longer than that, you have two sanctioned options:
 
-1. **Re-lift at point of use** (preferred): store the raw reference (or the `GameObject`) and create the optional where you consume it — `go.LookupComponent<T>()` is cheap.
-2. **Re-check with `Alive()`**: if you do hold an `Optional<T>` across frames, call `Alive()` after the boundary, before consuming it. `Alive()` is the monadic analogue of `if (obj)` — same semantics, same cost, but it stays inside the pipeline:
+1. **Re-lift at point of use** (preferred): store the raw reference (or the `GameObject`) and create the optional where you consume it - `go.LookupComponent<T>()` is cheap.
+2. **Re-check with `Alive()`**: if you do hold an `Optional<T>` across frames, call `Alive()` after the boundary, before consuming it. `Alive()` is the monadic analogue of `if (obj)` - same semantics, same cost, but it stays inside the pipeline:
 
 ```csharp
 private Optional<Transform> _cachedTarget;
@@ -191,7 +191,7 @@ private void Update()
 }
 ```
 
-`Alive()` is constrained to `T : UnityEngine.Object`, so it doesn't exist (and costs nothing) for plain C# types — their snapshots can never go stale.
+`Alive()` is constrained to `T : UnityEngine.Object`, so it doesn't exist (and costs nothing) for plain C# types - their snapshots can never go stale.
 
 ## Practical guidance
 

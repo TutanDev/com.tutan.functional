@@ -13,7 +13,7 @@ A functional programming toolkit for Unity. It gives you explicit, composable re
 Unity projects routinely suffer from three categories of pain:
 
 **1. Null-reference exceptions**
-`GetComponent<T>()` returns null. `Resources.Load<T>()` returns null. Serialized fields that weren't wired up return null. The standard fix is defensive null checks at every call site — which means the checks are inconsistent and the errors are still runtime surprises.
+`GetComponent<T>()` returns null. `Resources.Load<T>()` returns null. Serialized fields that weren't wired up return null. The standard fix is defensive null checks at every call site - which means the checks are inconsistent and the errors are still runtime surprises.
 
 **2. Exception-driven control flow**
 `int.Parse()`, `JsonUtility.FromJson<T>()`, and many third-party APIs signal failure by throwing. Catching these in normal game logic mixes "control flow" with "error recovery" and makes pipelines impossible to read or test.
@@ -27,10 +27,10 @@ When a config file has five bad fields you typically only learn about the first 
 
 This library uses **railway-oriented programming**: every step in a data pipeline is either on the happy track (the value keeps moving forward) or on the error track (errors short-circuit or accumulate, depending on the strategy you choose). The key ideas are:
 
-- **Explicit absence** — `Optional<T>` replaces `null` with a type that forces you to handle the missing case.
-- **Explicit failure** — `Result<T>` replaces exceptions with a value that carries either a result or an `Error`.
-- **Composable pipelines** — `Then`, `Map`, `Bind`, and `Match` let you chain steps without nested conditionals.
-- **Async parity** — the core operators (`Map`, `Bind`, `Then`, `Match`, `Try`) have `UniTask` counterparts (when UniTask is installed), so async pipelines look like sync ones.
+- **Explicit absence** - `Optional<T>` replaces `null` with a type that forces you to handle the missing case.
+- **Explicit failure** - `Result<T>` replaces exceptions with a value that carries either a result or an `Error`.
+- **Composable pipelines** - `Then`, `Map`, `Bind`, and `Match` let you chain steps without nested conditionals.
+- **Async parity** - the core operators (`Map`, `Bind`, `Then`, `Match`, `Try`) have `UniTask` counterparts (when UniTask is installed), so async pipelines look like sync ones.
 
 ---
 
@@ -40,7 +40,7 @@ This library uses **railway-oriented programming**: every step in a data pipelin
 Represents a value that **might exist** (`Some`) or **might be absent** (`None`). `Some()` treats a destroyed `UnityEngine.Object` as `None`, so Unity's fake-null problem is handled at the boundary. Use it wherever "not found" is a normal, non-exceptional outcome.
 
 ### `Result<T>`
-Represents the **outcome of an operation** — either `Success(value)` or an `Error`. `Success()` treats a null reference-type value as an error automatically. Use it wherever a failure needs to be explained (config parsing, asset loading, service calls).
+Represents the **outcome of an operation** - either `Success(value)` or an `Error`. `Success()` treats a null reference-type value as an error automatically. Use it wherever a failure needs to be explained (config parsing, asset loading, service calls).
 
 ### `Error`
 An immutable value carrying a human-readable `Message`, an optional inner `Error` for nesting, or a composite of multiple errors from validation. Use `Error.AsEnumerable()` to flatten composite errors for logging.
@@ -51,7 +51,7 @@ An immutable value carrying a human-readable `Message`, an optional inner `Error
 
 Be precise about what is and isn't free here, because the two are easy to conflate:
 
-**The types are allocation-free.** `Optional<T>`, `Result<T>`, and `Error` are structs — creating, returning, and matching them never touches the heap (an `Error` only allocates when you compose inner/composite errors, which builds an array).
+**The types are allocation-free.** `Optional<T>`, `Result<T>`, and `Error` are structs - creating, returning, and matching them never touches the heap (an `Error` only allocates when you compose inner/composite errors, which builds an array).
 
 **Pipelines allocate when lambdas capture.** A lambda that closes over a local or `this` allocates a closure object and a delegate **every call**:
 
@@ -69,21 +69,21 @@ Optional<Vector3> pos = maybeTarget.Map(t => t.position);
 
 ### Guidance
 
-- **System-level code** — loading, validation, config, network, save data, UI events — is the sweet spot. A closure allocation in code that runs once per click or per scene load is irrelevant; write for clarity.
-- **Per-frame hot paths** — `Update`, physics callbacks, per-entity loops — need care. Three allocation-free options, in order of preference:
+- **System-level code** - loading, validation, config, network, save data, UI events - is the sweet spot. A closure allocation in code that runs once per click or per scene load is irrelevant; write for clarity.
+- **Per-frame hot paths** - `Update`, physics callbacks, per-entity loops - need care. Three allocation-free options, in order of preference:
 
   1. **Keep lambdas capture-free.** If the lambda only uses its parameter, it's cached automatically.
   2. **Use the state-passing overloads** to pass locals as an argument instead of capturing them. `Map`, `Bind`, `Then`, `Filter`, and `Match` all have `TState` forms on both `Optional<T>` and `Result<T>`, so a whole hot pipeline can stay capture-free end to end. Mark the lambdas `static` and the compiler *enforces* it:
 
      ```csharp
-     // `origin` travels as TState — `static` guarantees no capture
+     // `origin` travels as TState - `static` guarantees no capture
      float dist = maybeTarget
          .Alive()
          .Map(origin, static (t, o) => Vector3.Distance(t.position, o))
          .Match(float.PositiveInfinity, static d => d, static (v, _) => v);
      ```
 
-     Need more than one local? Pack a value tuple — still no allocation:
+     Need more than one local? Pack a value tuple - still no allocation:
 
      ```csharp
      maybeTarget.Filter((minDist, origin), static (t, s) => Vector3.Distance(t.position, s.origin) > s.minDist);
@@ -96,7 +96,7 @@ Optional<Vector3> pos = maybeTarget.Map(t => t.position);
          Steer(target.position);
      ```
 
-- Method-group arguments (`.Map(GetPosition)` with `static Vector3 GetPosition(Transform t) => t.position;`) also allocate a delegate per call under C# 10 — prefer an explicit capture-free lambda in hot paths.
+- Method-group arguments (`.Map(GetPosition)` with `static Vector3 GetPosition(Transform t) => t.position;`) also allocate a delegate per call under C# 10 - prefer an explicit capture-free lambda in hot paths.
 - `Try` allocates when an exception is actually thrown (`ex.ToString()`); that's the exceptional path paying, which is the right trade.
 
 In short: this is an **allocation-conscious** library, not a zero-allocation one. The data types cost nothing; the fluent style costs what closures always cost in C#. Spend that cost where frames don't.
@@ -137,4 +137,4 @@ using static Tutan.Functional.F;   // brings Some, None, Success, Try, etc. into
 | ✅ | [Validation](Validation.md) | `Validator<T>`, `FailFast`, `HarvestErrors`, combining validators |
 | 🔧 | [Utilities](Utilities.md) | `F` module, `IEnumerable` extensions, Unity lookup helpers |
 | ⚡ | [Async](Async.md) | `ThenAsync`, `TryAsync`, mixing sync/async pipelines |
-| 📋 | [API Reference](API-Reference.md) | Every public member — signature and one-line description |
+| 📋 | [API Reference](API-Reference.md) | Every public member - signature and one-line description |

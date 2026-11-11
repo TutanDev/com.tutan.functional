@@ -10,7 +10,7 @@
 
 ## Construction
 
-### Simple error — a single message
+### Simple error - a single message
 
 ```csharp
 Error e1 = new Error("Save file not found");
@@ -24,7 +24,7 @@ Result<SaveData> result = Error("Save file not found");
 // Result<SaveData> bad = "Save file not found";  // does not compile: string → Error → Result is two user-defined conversions
 ```
 
-### Nested error — wraps a cause
+### Nested error - wraps a cause
 
 ```csharp
 Error inner = Error("Disk read failed");
@@ -33,7 +33,7 @@ Error outer = Error("Could not load save", inner);
 
 Use nesting when you want a high-level message alongside a lower-level cause, similar to `Exception.InnerException`.
 
-### Error with a code — attach a machine-readable code
+### Error with a code - attach a machine-readable code
 
 ```csharp
 Error e = Error("Save file not found", 404);
@@ -43,9 +43,9 @@ Error e = new Error("Save file not found", 404);
 Error outer = Error("Could not load save", 500, inner);
 ```
 
-The optional `Code` is an `int` (default `0` when unspecified). Use it when callers should branch on a stable code rather than parse the message — HTTP-style status codes, a domain error enum cast to `int`, and so on. `Code` participates in equality.
+The optional `Code` is an `int` (default `0` when unspecified). Use it when callers should branch on a stable code rather than parse the message - HTTP-style status codes, a domain error enum cast to `int`, and so on. `Code` participates in equality.
 
-### Composite error — collects multiple failures
+### Composite error - collects multiple failures
 
 ```csharp
 var errors = new[]
@@ -58,7 +58,7 @@ Error composite = Error(errors);
 // composite.Message == "DisplayName is required; Level must be >= 1; Currency must be >= 0"
 ```
 
-The composite constructor joins messages with `"; "` and stores all errors as inner errors. This is the format produced by `HarvestErrors` — see [Validation.md](Validation.md).
+The composite constructor joins messages with `"; "` and stores all errors as inner errors. This is the format produced by `HarvestErrors` - see [Validation.md](Validation.md).
 
 ### From an exception
 
@@ -89,7 +89,7 @@ catch (Exception ex)
 |---|---|---|
 | `Message` | `string` | The human-readable description of this error |
 | `Code` | `int` | Optional machine-readable error code; `0` when unspecified |
-| `InnerErrors` | `ReadOnlySpan<Error>` | Inner errors (empty span when none). **Cannot cross async boundaries** — call `.ToArray()` first if you need to store or pass it. |
+| `InnerErrors` | `ReadOnlySpan<Error>` | Inner errors (empty span when none). **Cannot cross async boundaries** - call `.ToArray()` first if you need to store or pass it. |
 
 ---
 

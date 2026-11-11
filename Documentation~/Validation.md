@@ -45,14 +45,14 @@ Result<PlayerConfig> result = validate(config);
 ### Overloads
 
 ```csharp
-// params array — most common
+// params array - most common
 Validator<T> FailFast<T>(params Validator<T>[] validators)
 
-// IEnumerable — when you build the list dynamically
+// IEnumerable - when you build the list dynamically
 Validator<T> FailFast<T>(IEnumerable<Validator<T>> validators)
 ```
 
-### Example — Unity form submit
+### Example - Unity form submit
 
 ```csharp
 using UnityEngine;
@@ -84,7 +84,7 @@ public class RegistrationValidator : MonoBehaviour
             ? Success(f)
             : Error("Must be 13 or older");
 
-    // Stops at first failure — good for a submit button
+    // Stops at first failure - good for a submit button
     static readonly Validator<RegistrationForm> Validate =
         FailFast(UsernameNotEmpty, EmailHasAt, AgeOver13);
 
@@ -112,7 +112,7 @@ Result<PlayerConfig> result = validate(config);
 // (a validator that itself returns a composite contributes each of its parts).
 ```
 
-**Use case:** Config file validation, asset manifest checks, level editor rules — anywhere you want to show the user everything that needs fixing in one pass.
+**Use case:** Config file validation, asset manifest checks, level editor rules - anywhere you want to show the user everything that needs fixing in one pass.
 
 ### Overloads
 
@@ -121,7 +121,7 @@ Validator<T> HarvestErrors<T>(params Validator<T>[] validators)
 Validator<T> HarvestErrors<T>(IEnumerable<Validator<T>> validators)
 ```
 
-### Example — config validation with multiple fields
+### Example - config validation with multiple fields
 
 ```csharp
 using UnityEngine;
@@ -153,7 +153,7 @@ public class ConfigValidator
             ? Success(c)
             : Error("RespawnDelay must be >= 0");
 
-    // Collects all failures — good for surfacing config problems at startup
+    // Collects all failures - good for surfacing config problems at startup
     public static readonly Validator<GameConfig> Validate =
         HarvestErrors(MapNameSet, MaxPlayersPositive, RespawnDelayNonNegative);
 
@@ -166,7 +166,7 @@ public class ConfigValidator
                 foreach (var err in e.AsEnumerable())
                     Debug.LogError($"  • {err.Message}");
             },
-            onSuccess: valid => Debug.Log($"Config OK — map: {valid.MapName}"));
+            onSuccess: valid => Debug.Log($"Config OK - map: {valid.MapName}"));
     }
 }
 ```
@@ -185,7 +185,7 @@ Validator<PlayerConfig> identityRules =
 Validator<PlayerConfig> progressionRules =
     HarvestErrors(levelPositive, currencyNonNegative);
 
-// Then combine the groups with FailFast — identity must pass before checking progression
+// Then combine the groups with FailFast - identity must pass before checking progression
 Validator<PlayerConfig> fullValidation =
     FailFast(identityRules, progressionRules);
 ```
@@ -196,5 +196,5 @@ Validator<PlayerConfig> fullValidation =
 
 - Prefer `HarvestErrors` at startup or in editor tooling where showing all problems saves iteration time.
 - Prefer `FailFast` in user-facing interactions where only the first error matters; it also skips the remaining validators. Neither combinator is allocation-free (closures, LINQ, and the error list are allocated per call), so keep validation out of per-frame code.
-- Keep each `Validator<T>` focused on a single rule — they compose cleanly and are easy to unit-test individually.
+- Keep each `Validator<T>` focused on a single rule - they compose cleanly and are easy to unit-test individually.
 - Use `e.AsEnumerable()` on the error from `HarvestErrors` to iterate individual rule failures for display.
